@@ -1,0 +1,216 @@
+What is Nmap?​
+
+Nmap is short for Network Mapper. 
+It is an open-source Linux command-line tool that is used to scan 
+IP addresses and ports in a network and to detect installed applications.​
+----------------------------------------------------------------
+Ping Scan:
+Purpose of a Ping Scan​
+Determines whether hosts are active or "up" on a network.​
+Command​
+nmap -sn <target IP or network range>​
+Example(nmap -sn 192.168.29.84/24)​
+----------------------------------------------------------------
+ ARP Ping Scan
+ nmap -PR 192.168.1.0/24
+----------------------------------------------------------------
+ICMP Echo Request Ping
+nmap -PE 192.168.1.0/24
+----------------------------------------------------------------
+TCP SYN Ping Scan
+Sends TCP SYN packets to the specified ports (default is port 80).
+nmap -PS 192.168.1.0/24
+
+----------------------------------------------------------------
+Purpose of Port Scanning​
+
+Identifies open or closed ports on a target host or network.​
+
+ Syntax​
+
+nmap <target IP>​
+
+Scanning common ports on a single host​
+
+nmap 192.168.29.84​
+
+Output​
+
+Displays open ports and their state (open, closed, filtered).​
+----------------------------------------------------------------
+Purpose of Service Version Detection​
+
+Determines the software and version running on each open port.​
+
+ Syntax​
+
+nmap -sV <target IP>​
+
+nmap -sV 192.168.1.5​
+
+Output​
+
+Displays the version information for services on open ports.
+----------------------------------------------------------------
+Purpose of OS Detection​
+
+Identifies the operating system running on a host based on port and network behavior.​
+
+ Syntax​
+
+nmap -O <target IP>​
+
+nmap -O 192.168.1.5​
+
+Output​
+
+Estimates the operating system and sometimes the specific version.
+-------------------------------------------------------------------
+Purpose of Aggressive Scan​
+
+Performs a combination of scans to gather comprehensive information about a target host.​
+
+ Syntax​
+
+nmap -A <target IP>​
+
+nmap -A 192.168.1.5​
+
+Included Scans​
+
+OS detection, service version detection, traceroute, and script scanning for known vulnerabilities.​
+
+Output​
+
+Detailed information on open ports, running services, and potential vulnerabilities.
+--------------------------------------
+NetBIOS Enumeration​
+What is NetBIOS? (Network. Basic I/O System)​
+
+NETBIOS is a legacy networking protocol designed to enable communication between computers and 
+devices within a local area network (LAN). Developed by IBM in the early 1980s.​
+----------------------------------------------------------------
+Nbstat
+
+1)List Local NetBIOS Table
+Displays the local machine's NetBIOS names and their status:
+nbtstat -n
+2)List Remote NetBIOS Table
+Query a remote machine’s NetBIOS name table by IP address:
+nbtstat -A <IP_Address>
+3)List Remote NetBIOS Table by Name
+Use a hostname instead of an IP address:
+nbtstat -a <RemoteName>
+4)Display NetBIOS Sessions
+Shows the current NetBIOS sessions and their status:
+nbtstat -S
+5)Resolve NetBIOS Names to IP Addresses
+Displays the NetBIOS names and associated IP addresses from the local cache:
+nbtstat -c
+-------------------------------------------------------------------
+Netstat: ​
+netstat is a command-line tool that helps you see what's happening with network connections on your computer.​
+In simple terms, it shows you:​
+Active Connections: Lists all the current network connections to and from your computer, like websites you're connected to.​
+Listening Ports: Shows which programs are "listening" for connections on specific ports. For example, if you’re running a web server, netstat can show which port (like port 80 for HTTP) it's using.​
+Network Statistics: Displays stats about your network, like how many data packets have been sent or received.
+------------------
+1. To display the NetBIOS name table of a remote computer​
+
+     Command:​
+
+   netstat –a​
+
+ 2.To see IPv4/IPv6 Group Memberships​
+
+      Command:​
+
+      netstat -g​
+
+    3. To display kernel interface​
+
+  Command:​
+
+     netstat -i
+-----------------------
+Mobile Network Scanner​
+Fing​
+Network Discovery​
+PortDroid​
+​
+(Scanning Tools For Mobile)​
+
+​--------------------------------
+What are Mobile Network Scanning Tools?​
+
+Mobile applications that scan and gather information about networked devices, services, and open ports.​
+
+Purpose and Importance​
+
+Enable IT professionals and security analysts to perform network diagnostics, asset discovery, and security assessments directly from mobile devices.​
+
+Convenient for quick checks on Wi-Fi networks, especially for on-the-go or remote network monitoring.​
+
+​----------------
+Mobile Network Scanner​
+Purpose​
+Basic network scanner focused on identifying networked devices and their IP addresses.​
+
+Features​
+Scans for devices on local Wi-Fi networks.​
+Shows details like IP addresses, MAC addresses, and device names.​
+Usage​
+Simple to use, suitable for basic network inventory tasks.​
+Great for quickly identifying all devices connected to a Wi-Fi network.​
+-------------------
+Fing​
+Overview​
+One of the most popular mobile network scanning tools with a broad range of features.​
+
+Features​
+Device Discovery: Scans for all devices connected to a network.​
+Network Health and Security: Checks network security, alerts for unknown devices.​
+Service Scanning: Identifies open ports and services on each device.​
+
+Usage and Interface​
+Fing is user-friendly with a clean interface showing all connected devices and open ports.​
+Available for both iOS and Android.​
+
+Practical Use Cases​
+Excellent for network administrators who need to manage network security and device inventory on the go.​
+
+----------------------------------------------------------------
+Network Discovery Tool​
+Overview​
+Focuses on discovering shared network resources like file shares and printers, useful for LANs.​
+
+Features​
+Service Discovery: Identifies shared folders, printers, and media servers.​
+Device Information: Provides IP and MAC addresses, device type, and manufacturer details.​
+
+Usage​
+Particularly helpful for environments with shared network resources or mixed OS setups.​
+
+Example Use Case​
+Ideal for network troubleshooting in shared office environments where networked resources need to be managed.​
+
+-----------------------
+PortDroid – Network Analysis Tool​
+PortDroid specializes in network diagnostics with a focus on port scanning and service information.​
+
+Features​
+Port Scanning: Scans for open ports on specific devices.​
+Ping and Traceroute: Diagnoses network speed and path information.​
+Whois Lookup: Provides detailed information about domains and IP addresses.​
+
+Usage​
+Simple and direct interface, designed for fast scans and diagnostics.​
+
+Example Use Case​
+Useful for IT pros who need to assess open ports and possible vulnerabilities on individual devices.​
+
+​
+​
+​
+
+​
