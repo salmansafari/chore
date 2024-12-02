@@ -1,0 +1,195 @@
+Download Tails
+
+Download Tails 6.10 USB image ( 1.5 GB )
+or download using BitTorrent
+
+Save your download to your usual Downloads folder and not to the USB stick.
+
+Verify your download
+
+Verify your download to make sure that it is safe and was not corrupted during download.
+
+Select your download to verify…
+or verify using the OpenPGP signature
+
+Download balenaEtcher
+
+balenaEtcher is the Free Software tool that we recommend to install Tails on USB sticks.
+
+Click on the following button to download balenaEtcher:
+
+Download balenaEtcher for Windows
+
+Save your download to your usual Downloads folder and not to the USB stick.
+
+Install Tails using balenaEtcher
+
+Open the balenaEtcher download.
+
+At the security warning, confirm that you want to open balenaEtcher.
+
+balenaEtcher starts.
+
+If balenaEtcher does not start, restart Windows and try again.
+
+
+
+Plug in the USB stick on which you want to install Tails.
+
+Click the Flash from file button.
+
+Choose the USB image that you downloaded earlier.
+
+Make sure that the USB image is called tails-amd64-6.10.img and has an .img file extension.
+
+If the image has an .iso file extension, it is the wrong image. Please go back to the download step.
+
+Click the Select target button to select your USB stick.
+
+All the data on this USB stick will be lost.
+
+Click Flash.
+
+Enter your password if you are asked for it.
+
+The installation takes a few minutes.
+
+After installing Tails, balenaEtcher verifies the installation.
+
+If the verification of balenaEtcher fails, try to install again or try using a different USB stick.
+
+Close balenaEtcher.
+
+Well done!
+
+You have installed Tails on your USB stick.
+
+In the next step, you will make your computer start on this USB stick.
+
+Tails might not work on your computer, so good luck!
+
+Open these instructions on another device
+
+In the next step, you will shut down the computer. To be able to follow the rest of the instructions afterwards, you can either:
+
+Scan this QR code on your smartphone or tablet:
+
+
+Print these instructions on paper.
+
+Take note of the URL of this page:
+
+https://tails.net/install/windows?back=1
+
+Restart on your Tails USB stick
+
+Make the computer start on the USB stick
+Click on the Start  button.
+
+Press and hold the Shift key while you choose Power ▸ Restart.
+
+In the Choose an option screen, choose Use a device.
+
+
+If the Choose an option screen or the Use a device option don't appear, refer to the instructions on starting Tails using the Boot Menu key.
+
+In the Use a device screen, choose Boot Menu.
+
+Windows shuts down, the computer restarts, and a Boot Menu appears.
+
+If your Windows has no Boot Menu option available, make sure that your Tails USB stick is plugged in and choose your USB stick directly in the list of devices.
+
+The Boot Menu is a list of possible devices to start from. The following screenshot is an example of a Boot Menu:
+
+In the Boot Menu, select your USB stick and press Enter.
+
+If the computer starts on Tails, the Boot Loader appears and Tails starts automatically after 4 seconds.
+
+Black screen ('GNU GRUB') with Tails
+       logo and 3 options: 'Tails' and 'Tails (Troubleshooting Mode)' and 'Tails (External Hard Disk)'.
+
+The Troubleshooting Mode entry disables some features of the Linux kernel and might work better on some computers. You can try this option if you think you are experiencing hardware compatibility errors while starting Tails.
+
+The External Hard Disk entry makes it possible to start from an external hard disk and some problematic USB sticks.
+
+Troubleshoot Tails not starting
+If no Boot Menu appears, refer to the instructions on starting Tails using the Boot Menu key.
+
+If the Boot Menu appears but your USB stick is not listed in the Boot Menu:
+
+Wait 2–3 minutes and try again. Some USB sticks need some rest after installing.
+
+Try all other USB ports on the computer. Some USB ports cannot be used to start from.
+
+If your USB stick is listed in the Boot Menu but the Boot Loader does not appear:
+
+Make sure that you have verified your download.
+
+Try to install again on the same USB stick.
+
+Try to install on a different USB stick.
+
+Try to use the same USB stick to start on a different computer.
+
+If your computer still does not display the Boot Loader, it might currently be impossible to start Tails on your computer.
+
+If the Boot Loader appears but Tails fails to start after the Boot Loader, refer to the troubleshooting section about Tails not starting after the Boot Loader.
+
+Starting the computer using a Boot Menu key can be faster than starting the computer on Windows first and then on Tails. We recommend you learn how to start Tails using the Boot Menu key if you use Tails regularly.
+
+Welcome to Tails!
+
+After the Boot Menu, a loading screen appears.
+
+One to two minutes after the Boot Loader and the loading screen, the Welcome Screen appears.
+
+Welcome to Tails!
+
+In the Welcome Screen, select your language and keyboard layout in the Language and Formats section. Click Start Tails.
+
+After 15–30 seconds, the Tails desktop appears.
+
+You made it!
+
+You managed to start Tails on your computer!
+
+Congratulations on staying safe :)
+
+To continue discovering Tails, read our documentation.
+
+Test your Wi-Fi
+Problems with Wi-Fi are unfortunately quite common in Tails and Linux in general. To test if your Wi-Fi interface works in Tails:
+
+Open the system menu in the top-right corner:
+
+Choose Wi-Fi Not Connected and then Select Network.
+
+After establishing a connection to a local network, the Tor Connection assistant appears to help you connect to the Tor network.
+
+
+
+If your Wi-Fi interface is not working, you might experience the following:
+
+There is no Wi-Fi menu in the system menu:
+
+###############################################
+Launch LANState Pro : Open the application on your Windows machine after installation.
+Create a New Network Map : Navigate to the File menu and select New Map. This will initiate the process of mapping your network.
+Configure Network Scanning Settings : In the map creation wizard, specify the parameters for the network scan :
+IP Range: Enter the range of IP addresses you want to scan (e.g., 192.168.1.1 to 192.168.1.255).
+Device Types: Select which types of devices you want to discover (e.g., computers, printers, switches).
+Start the Network Scan : Click on the Scan button to begin the discovery process. LANState Pro will automatically scan the specified IP range and detect devices.
+View Scan Results : 
+Once the scan is complete, LANState Pro will display a visual map of detected devices with vector icons representing each device type.
+You can click on each device icon to view detailed information such as IP address, MAC address, device status (active/inactive), and other properties.
+6. Monitor Device Status in Real-Time : 
+The software provides real-time monitoring capabilities, allowing you to see the current state of each device on your network.
+You can configure alerts for specific events such as device disconnections or service failures.
+7. Manage Devices : From the visual map, you can perform various management tasks: 
+Remote Actions: Shut down, restart, or wake devices using Wake-On-LAN functionality.
+Access Device Properties: Quickly access RDP or web interfaces for remote management.
+Send Messages: Communicate with users on the network through the integrated messaging feature.
+8. Save and Export Your Network Map : 
+After completing your discovery and management tasks, save your network map for future reference.
+You can also export the map to various formats including bitmap files or Microsoft Visio for documentation purposes.
+9. Continuous Monitoring : Set up continuous monitoring to automatically detect new devices as they connect to your network and receive alerts about any changes in device status.
