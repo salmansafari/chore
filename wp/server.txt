@@ -1,0 +1,188 @@
+//HTTP Server and serve HTML,CSV,JSON and PDF 
+
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const PDFDocument = require('pdfkit');
+
+const app = express();
+const PORT = 3003;
+
+// Serve HTML
+app.get('/html', (req, res) => {
+  const filePath = path.join(__dirname, 'public', 'index.html');
+  res.sendFile(filePath);
+});
+
+// Serve CSV
+app.get('/csv', (req, res) => {
+  const filePath = path.join(__dirname, 'data', 'sample.csv');
+  res.setHeader('Content-Type', 'text/csv');
+  res.sendFile(filePath);
+});
+
+// Serve JSON
+app.get('/json', (req, res) => {
+  const filePath = path.join(__dirname, 'data', 'sample.json');
+  res.setHeader('Content-Type', 'application/json');
+  res.sendFile(filePath);
+});
+
+// Serve PDF
+app.get('/pdf', (req, res) => {
+  const doc = new PDFDocument();
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', 'inline; filename="sample.pdf"');
+
+  doc.text('Hello, this is a sample PDF document!');
+  doc.end();
+
+  doc.pipe(res);
+});
+
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Server is running at http://localhost:${PORT}`);
+});
+
+
+
+
+//video
+
+const http = require('http');
+const fs = require('fs');
+
+const server = http.createServer((req, res) => {
+   if (req.url === '/video') {
+       const filePath = './video.mp4';
+       const stat = fs.statSync(filePath);
+       const fileSize = stat.size;
+
+       const range = req.headers.range;
+       if (range) {
+           const parts = range.replace(/bytes=/, "").split("-");
+           const start = parseInt(parts[0], 10);
+           const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+
+           const chunkSize = (end - start) + 1;
+           const file = fs.createReadStream(filePath, { start, end });
+
+           res.writeHead(206, {
+               'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+               'Accept-Ranges': 'bytes',
+               'Content-Length': chunkSize,
+               'Content-Type': 'video/mp4',
+           });
+
+           file.pipe(res);
+       } else {
+           res.writeHead(200, {
+               'Content-Length': fileSize,
+               'Content-Type': 'video/mp4',
+           });
+
+           fs.createReadStream(filePath).pipe(res);
+       }
+   } else {
+       res.writeHead(404, { 'Content-Type': 'text/plain' });
+       res.end('Not Found');
+   }
+});
+
+server.listen(3001, () => {
+   console.log('Server running on http://localhost:3001');
+});
+
+
+
+
+
+//3p using Routing.
+
+index.html
+
+<!DOCTYPE html>
+<html>
+ <head>
+   <title>College Home Page</title>
+ </head>
+ <body>
+   <h1>Welcome to XYZ College</h1>
+   <p>
+     Our college is renowned for academic excellence and vibrant campus life.
+   </p>
+   <a href="/about">About Us</a> | <a href="/contact">Contact Us</a>
+ </body>
+</html>
+
+
+
+
+About.html
+
+<!DOCTYPE html>
+<html>
+<head>
+   <title>About Me</title>
+</head>
+<body>
+   <h1>About XYZ College</h1>
+   <p>XYZ College offers courses in arts, science, and technology.</p>
+   <a href="/">Home</a> | <a href="/contact">Contact Us</a>
+</body>
+</html>
+
+
+Contact.html
+
+<!DOCTYPE html>
+<html>
+<head>
+   <title>Contact Us</title>
+</head>
+<body>
+   <h1>Contact XYZ College</h1>
+   <p>Email: info@xyzcollege.edu</p>
+   <p>Phone: +123-456-7890</p>
+   <a href="/">Home</a> | <a href="/about">About Us</a>
+</body>
+</html>
+
+
+
+
+
+app.js
+
+const http = require("http");
+const fs = require("fs");
+
+const routes = {
+ "/": "./index.html",
+ "/about": "./about.html",
+ "/contact": "./contact.html",
+};
+
+const server = http.createServer((req, res) => {
+ const filePath = routes[req.url];
+ if (filePath) {
+   fs.readFile(filePath, (err, data) => {
+     if (err) {
+       res.writeHead(500, { "Content-Type": "text/plain" });
+       res.end("Server Error");
+     } else {
+       res.writeHead(200, { "Content-Type": "text/html" });
+       res.end(data);
+     }
+   });
+ } else {
+   res.writeHead(404, { "Content-Type": "text/plain" });
+   res.end("Page Not Found");
+ }
+});
+
+server.listen(3002, () => {
+ console.log("Server running on http://localhost:3002");
+});
+

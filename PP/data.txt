@@ -1,0 +1,226 @@
+# Linked List
+
+
+class Node:
+    def __init__(self, data):
+        self.data = data
+        self.next = None
+
+class LinkedList:
+    def __init__(self):
+        self.head = None
+
+    def traverse(self):
+        current = self.head
+        while current:
+            print(current.data, end=" -> ")
+            current = current.next
+        print("None")
+
+    def insert(self, data):
+        new_node = Node(data)
+        if not self.head:
+            self.head = new_node
+        else:
+            current = self.head
+            while current.next:
+                current = current.next
+            current.next = new_node
+
+    def remove(self, key):
+        if not self.head:
+            print("List is empty")
+            return
+        if self.head.data == key:
+            self.head = self.head.next
+            return
+        current = self.head
+        while current.next and current.next.data != key:
+            current = current.next
+        if current.next:
+            current.next = current.next.next
+        else:
+            print(f"{key} not found in the list.")
+
+#Implementation
+ll = LinkedList()
+ll.insert(200)
+ll.insert(400)
+ll.insert(450)
+ll.insert(100)
+ll.traverse()
+ll.remove(100)
+ll.traverse()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# stacks
+
+
+class Stack:
+    def __init__(self):
+        self.stack = []
+
+    def push(self, data):
+        self.stack.append(data)
+
+    def pop(self):
+        if not self.stack:
+            return "Stack is empty"
+        return self.stack.pop()
+
+    def peek(self):
+        if not self.stack:
+            return "Stack is empty"
+        return self.stack[-1]
+
+    def is_empty(self):
+        return len(self.stack) == 0
+
+# Implementation
+s = Stack()
+s.push(11)
+s.push(12)
+s.push(50)
+s.push(72)
+s.push(40)
+print(s.pop())
+print(s.peek())
+print(s.pop())
+print(s.peek())
+print(s.pop())
+print(s.peek())
+
+
+
+
+
+# Queue
+
+Code:-
+
+class Queue:
+    def __init__(self):
+        self.queue = []
+
+    def enqueue(self, data):
+        print(f"Enqueuing {data} into the queue.")
+        self.queue.append(data)
+        print(f"{data} enqueued.")
+
+    def dequeue(self):
+        if not self.queue:
+            print("Queue is empty.")
+            return None
+        dequeued = self.queue.pop(0)
+        print(f"Dequeued {dequeued} from the queue.")
+        return dequeued
+
+    def is_empty(self):
+        empty = len(self.queue) == 0
+        print(f"Queue is empty: {empty}")
+        return empty
+
+    def peek(self):
+        if not self.queue:
+            print("Queue is empty.")
+            return None
+        print(f"Front of the queue: {self.queue[0]}")
+        return self.queue[0]
+
+# Implementation
+q = Queue()
+q.enqueue(100)
+q.enqueue(200)
+q.enqueue(300)
+q.dequeue()
+q.peek()
+q.dequeue()
+q.peek()
+q.dequeue()
+q.peek()
+
+
+
+
+
+
+# Dequeue
+
+Code:-
+
+from collections import deque
+
+class Dequeue:
+    def __init__(self):
+        self.deque = deque()
+
+    def add_front(self, data):
+        print(f"Adding {data} to the front of the dequeue.")
+        self.deque.appendleft(data)
+        print(f"{data} added to the front.")
+
+    def add_rear(self, data):
+        print(f"Adding {data} to the rear of the dequeue.")
+        self.deque.append(data)
+        print(f"{data} added to the rear.")
+
+    def remove_front(self):
+        if not self.deque:
+            print("Deque is empty.")
+            return None
+        removed = self.deque.popleft()
+        print(f"Removed {removed} from the front of the dequeue.")
+        return removed
+
+    def remove_rear(self):
+        if not self.deque:
+            print("Deque is empty.")
+            return None
+        removed = self.deque.pop()
+        print(f"Removed {removed} from the rear of the dequeue.")
+        return removed
+
+    def peek_front(self):
+        if not self.deque:
+            print("Deque is empty.")
+            return None
+        print(f"Front of the dequeue: {self.deque[0]}")
+        return self.deque[0]
+
+    def peek_rear(self):
+        if not self.deque:
+            print("Deque is empty.")
+            return None
+        print(f"Rear of the dequeue: {self.deque[-1]}")
+        return self.deque[-1]
+
+# Implementation
+dq=Dequeue()
+dq.add_front(100)
+dq.add_rear(200)
+dq.add_rear(300)
+dq.remove_front()
+dq.remove_rear()
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,167 @@
+#class
+
+import math
+
+class Circle:
+   def __init__(self, radius):
+       self.radius = radius
+
+   def area(self):
+       return math.pi * self.radius ** 2
+
+   def perimeter(self):
+       return 2 * math.pi * self.radius
+
+radius = float(input("Enter the radius of the circle: "))
+circle = Circle(radius)
+
+print(f"The area of the circle is: {circle.area():.2f}")
+print(f"The perimeter of the circle is: {circle.perimeter():.2f}")
+
+
+
+# Multiple Inheritance.
+
+Code: 
+
+class Animal:
+   def __init__(self, name):
+       self.name = name
+
+   def speak(self):
+       return f"{self.name} makes a sound."
+
+class Bird:
+   def __init__(self, species):
+       self.species = species
+
+   def fly(self):
+       return f"{self.species} can fly."
+
+# Child class inheriting from both Animal and Bird
+class Parrot(Animal, Bird):
+   def __init__(self, name, species):
+       Animal.__init__(self, name)  # Initialize Animal class
+       Bird.__init__(self, species)  # Initialize Bird class
+
+ 
+   def display(self):
+       return f"{self.name} is a {self.species} parrot."
+
+parrot = Parrot("Polly", "Macaw")
+
+print(parrot.speak())      # Inherited from Animal
+print(parrot.fly())        # Inherited from Bird
+print(parrot.display())    # Method of the Parrot class
+
+
+
+
+
+
+
+
+#Function overloading
+
+
+class Calculator:
+   def add(self, a, b):
+       return a + b
+
+
+class AdvancedCalculator:
+   def add(self, a, b, c):
+       return a + b + c
+
+# Child class inheriting from both 
+class MultiFunctionCalculator(Calculator, AdvancedCalculator):
+   def add(self, a, b, c=None):
+       if c is None:
+          
+           return Calculator.add(self, a, b)
+       else:
+           
+           return AdvancedCalculator.add(self, a, b, c)
+
+
+calculator = MultiFunctionCalculator()
+
+# two arguments
+print(f"Sum of two numbers (2 + 3): {calculator.add(2, 3)}")
+
+# three arguments
+print(f"Sum of three numbers (2 + 3 + 4): {calculator.add(2, 3, 4)}")
+
+
+
+
+
+#Implement Operator Overloading
+
+
+
+class ComplexNumber:
+   def __init__(self, real, imaginary):
+       self.real = real
+       self.imaginary = imaginary
+
+   # Overloading the + operator
+   def __add__(self, other):
+    
+       real_part = self.real + other.real
+       imaginary_part = self.imaginary + other.imaginary
+       return ComplexNumber(real_part, imaginary_part)
+
+   def __str__(self):
+       return f"{self.real} + {self.imaginary}i"
+
+complex1 = ComplexNumber(3, 4)
+complex2 = ComplexNumber(1, 2)
+
+# Using the overloaded + operator
+result = complex1 + complex2
+
+print(f"Sum of complex numbers: {result}")
+
+
+
+# various exceptions 
+
+
+def divide_numbers():
+   try:
+       num1 = float(input("Enter the first number: "))
+       num2 = float(input("Enter the second number: "))
+
+
+       result = num1 / num2
+   except ZeroDivisionError:
+       # Handle division by zero
+       print("Error: You cannot divide by zero!")
+   except ValueError:
+       # Handle invalid input (non-numeric input)
+       print("Error: Please enter valid numeric values!")
+   else:
+       # This block executes if no exception occurs
+       print(f"The result of {num1} / {num2} is: {result}")
+   finally:
+       # This block always executes, whether exception occurs or not
+       print("Execution completed.")
+
+def main():
+   # Demonstrating exception handling with divide_numbers
+   print("Demonstrating division:")
+   divide_numbers()
+
+if __name__ == "__main__":
+   main()
+
+
+
+
+
+
+
+
+
+

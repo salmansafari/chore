@@ -1,0 +1,13 @@
+//timer
+
+const displayMessage = () => {
+    console.log('This message is displayed every 10 seconds!');
+};
+
+const timerInterval = setInterval(displayMessage, 10000);
+
+setTimeout(() => {
+    clearInterval(timerInterval);
+    console.log('Timer stopped after 1 minute');
+}, 60000);
+

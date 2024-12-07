@@ -1,0 +1,74 @@
+#correlation
+
+install.packages("ggplot2")
+install.packages("corrplot")
+install.packages("GGally")
+install.packages("car")
+
+library("corrplot")
+library("GGally")
+library("ggplot2")
+library("car")
+
+
+data <- read.csv("C:/company-sales.csv")
+
+#structure and summary
+str(data)
+summary(data)
+
+
+
+# Plot and Correlation Matrix:
+
+
+#Calcualte Correlation Matrix
+correlation_matrix <- cor(data, method = "pearson")
+correlation_matrix
+
+#Correlation using corrplot()
+corrplot(correlation_matrix, method="color")
+
+
+
+
+#Matrix Scatterplot:
+
+
+#Correlation using ggplot()
+ggpairs(data, title = "Scatterplot")
+
+#BOXPLOT or VIOLIN plots for numeric values
+ggplot(data, aes(x = "Group", y = toothpaste)) +
+  geom_boxplot(fill = "green") +
+  labs(title = "BOXPLOT or VIOLIN plots", x = "Categorical Variable", y = "Numeric
+Variable")
+
+#Creating histograms
+ggplot(data, aes(x = moisturizer)) +
+  geom_histogram(binwidth = 20, fill = "red") +
+  labs(title = "Histogram", x = "Numeric Variable")
+
+
+
+
+#Heatmap
+
+
+#Creating a heatmap using ggplot2
+ggplot(data, aes(x = total_units, y = facewash)) +
+  geom_tile(aes(fill = total_profit)) +
+  labs(title = "Heatmap", x = "Categr var 1", y = "Categr Var
+2", fill = "Numeric Variable")
+
+
+
+
+#Scatterplots of pairs:
+
+Code:
+data <- read.csv("C:/Users/user/Downloads/5975c7e38c8566b9b3144e45a99b65cf-941a7ecbab78d6032393ba8eed6579a563f126d6/company-sales.csv")
+data
+scatterplotMatrix(data)
+
+

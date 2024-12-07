@@ -1,0 +1,76 @@
+
+v <- c(19, 23, 11, 5, 16, 21, 32, 14, 19, 27, 39)
+
+
+# histogram.
+hist(v, xlab = "No.of Articles", col = "skyblue",
+     border = "black", xlim = c(0, 50),
+     ylim = c(0, 5), breaks = 5)    
+
+
+
+
+#boxplot
+
+input <- mtcars[, c('mpg', 'cyl')]
+print(head(input))
+# Load the dataset
+data(mtcars)
+
+boxplot(disp ~ gear, data = mtcars,
+        main = "Displacement by Gear",
+        xlab = "Gear",
+        ylab = "Displacement")
+
+
+
+# Bar chart
+
+
+# Create the data for the chart
+A <- c(17, 32, 8, 53, 1)
+
+# Plot the bar chart
+barplot(A, xlab = "X-axis", ylab = "Y-axis", main ="Bar-Chart")
+
+
+
+# Line Graph
+
+
+
+# Create the data for the chart.
+v <- c(17, 25, 38, 13, 41)
+
+# Plot the chart.
+plot(v, type = "o", col = "skyblue",
+     xlab = "Month", ylab = "Article Written",
+     main = "Article Written chart")
+
+
+
+
+#Scatter Plot 
+
+
+
+x <- c(5,7,8,7,2,2,9,4,11,12,9,6)
+y <- c(99,86,87,88,111,103,87,94,78,77,85,86)
+
+plot(x, y, main="Observation of Cars", xlab="Car age", ylab="Car speed")
+
+
+
+#Pie Chart
+
+# Create data for the graph.
+d<- c(23, 56, 20, 63)
+labels <- c("Mumbai", "Pune", "Chennai", "Bangalore")
+
+# Plot the chart with title and rainbow 
+# color pallet.
+pie(d, labels, main = "City pie chart",
+    col = rainbow(length(d)))
+
+
+

@@ -1,0 +1,99 @@
+#start thread
+
+import threading
+import time
+
+def print_numbers():
+    for i in range(1, 6):
+        print(f"Number: {i}")
+        time.sleep(1)  
+
+thread = threading.Thread(target=print_numbers)
+
+print("Starting the thread...")
+thread.start()
+
+thread.join()
+print("Thread has finished execution.")
+
+
+
+
+# Synchronization 
+
+import threading
+import time
+
+shared_counter = 0
+
+lock = threading.Lock()
+
+def increment_counter():
+    global shared_counter
+
+
+    for _ in range(5):
+        with lock:  
+            local_counter = shared_counter
+            print(f"{threading.current_thread().name} reading counter: {local_counter}")
+            time.sleep(1)  
+            local_counter += 1
+            shared_counter = local_counter
+            print(f"{threading.current_thread().name} updated counter: {shared_counter}")
+
+thread1 = threading.Thread(target=increment_counter, name="Thread-1")
+thread2 = threading.Thread(target=increment_counter, name="Thread-2")
+
+thread1.start()
+thread2.start()
+
+thread1.join()
+thread2.join()
+
+print(f"Final counter value: {shared_counter}")
+
+
+
+
+# multithreading priority queue
+
+
+import threading
+import queue
+import time
+
+priority_queue = queue.PriorityQueue()
+
+
+def process_queue():
+    while not priority_queue.empty():
+        priority, task = priority_queue.get()
+        print(f"{threading.current_thread().name} processing task: {task} with priority: {priority}")
+        time.sleep(1)  
+        priority_queue.task_done()
+
+# Add tasks to the PriorityQueue
+priority_queue.put((2, "Task-2"))  
+priority_queue.put((1, "Task-1"))
+priority_queue.put((3, "Task-3"))
+priority_queue.put((1, "Task-4"))
+threads = []
+for i in range(2):  
+    thread = threading.Thread(target=process_queue, name=f"Worker-{i+1}")
+    threads.append(thread)
+
+for thread in threads:
+    thread.start()
+
+for thread in threads:
+    thread.join()
+
+priority_queue.join()
+print("All tasks are processed.")
+
+
+
+
+
+
+

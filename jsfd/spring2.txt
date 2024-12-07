@@ -1,0 +1,510 @@
+//1. Before and After Advice
+Code:
+
+pom.xml
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+   <groupId>com.example</groupId>
+   <artifactId>aop-verification-example</artifactId>
+   <version>1.0-SNAPSHOT</version>
+   <dependencies>
+       <!-- AspectJ runtime -->
+       <dependency>
+           <groupId>org.aspectj</groupId>
+           <artifactId>aspectjrt</artifactId>
+           <version>1.9.9.1</version>
+       </dependency>
+       <!-- AspectJ weaver -->
+       <dependency>
+           <groupId>org.aspectj</groupId>
+           <artifactId>aspectjweaver</artifactId>
+           <version>1.9.9.1</version>
+       </dependency>
+   </dependencies>
+   <build>
+       <plugins>
+           <!-- AspectJ Maven Plugin for compile-time weaving -->
+           <plugin>
+               <groupId>org.codehaus.mojo</groupId>
+               <artifactId>aspectj-maven-plugin</artifactId>
+               <version>1.14.0</version>
+               <configuration>
+                   <source>1.8</source>
+                   <target>1.8</target>
+                   <showWeaveInfo>true</showWeaveInfo>
+                   <complianceLevel>1.8</complianceLevel>
+               </configuration>
+               <executions>
+                   <execution>
+                       <goals>
+                           <goal>compile</goal>
+                           <goal>test-compile</goal>
+                       </goals>
+                   </execution>
+               </executions>
+           </plugin>
+       </plugins>
+   </build>
+</project>
+
+
+
+
+Deposit.java
+
+package com.example;
+public class Deposit {
+   public void payment() {
+       System.out.println("Processing payment...");
+   }
+}
+
+
+Withdraw.java
+
+package com.example;
+public class Withdraw {
+   public void drawOut() {
+       System.out.println("Processing withdrawal...");
+   }
+}
+
+
+Beneficiary.java
+
+package com.example;
+public class Beneficiary {
+   public void addBeneficiary() {
+       System.out.println("Adding beneficiary...");
+   }
+}
+
+verificatioAspect.java
+
+package com.example;
+
+import org.aspectj.lang.annotation.After;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+
+@Aspect
+public class VerificationAspect {
+
+    @Before("execution(* com.example.Deposit.payment()) || " +
+            "execution(* com.example.Withdraw.drawOut()) || " +
+            "execution(* com.example.Beneficiary.addBeneficiary())")
+    public void accountLogin() {
+        System.out.println("Account Login: Verifying user credentials...");
+    }
+
+    @After("execution(* com.example.Deposit.payment()) || " +
+           "execution(* com.example.Withdraw.drawOut()) || " +
+           "execution(* com.example.Beneficiary.addBeneficiary())")
+    public void accountLogout() {
+        System.out.println("Account Logout: Logging out user...");
+    }
+}
+
+
+
+Main.java
+
+package com.example;
+public class Main {
+   public static void main(String[] args) {
+       Deposit deposit = new Deposit();
+       Withdraw withdraw = new Withdraw();
+       Beneficiary beneficiary = new Beneficiary();
+       System.out.println("Starting deposit process:");
+       deposit.payment();
+       System.out.println("\nStarting withdrawal process:");
+       withdraw.drawOut();
+       System.out.println("\nStarting beneficiary addition process:");
+       beneficiary.addBeneficiary();
+   }
+}
+
+
+
+Output:-
+
+
+
+
+
+
+//2.  Create a class deposit
+
+pom.xml
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+   <groupId>com.example</groupId>
+   <artifactId>aop-verification-example</artifactId>
+   <version>1.0-SNAPSHOT</version>
+   <dependencies>
+       <!-- AspectJ runtime -->
+       <dependency>
+           <groupId>org.aspectj</groupId>
+           <artifactId>aspectjrt</artifactId>
+           <version>1.9.9.1</version>
+       </dependency>
+       <!-- AspectJ weaver -->
+       <dependency>
+           <groupId>org.aspectj</groupId>
+           <artifactId>aspectjweaver</artifactId>
+           <version>1.9.9.1</version>
+       </dependency>
+   </dependencies>
+   <build>
+       <plugins>
+           <!-- AspectJ Maven Plugin for compile-time weaving -->
+           <plugin>
+               <groupId>org.codehaus.mojo</groupId>
+               <artifactId>aspectj-maven-plugin</artifactId>
+               <version>1.14.0</version>
+               <configuration>
+                   <source>1.8</source>
+                   <target>1.8</target>
+                   <showWeaveInfo>true</showWeaveInfo>
+                   <complianceLevel>1.8</complianceLevel>
+               </configuration>
+               <executions>
+                   <execution>
+                       <goals>
+                           <goal>compile</goal>
+                           <goal>test-compile</goal>
+                       </goals>
+                   </execution>
+               </executions>
+           </plugin>
+       </plugins>
+   </build>
+</project>
+
+
+
+
+Deposit.java
+
+package com.example;
+public class Deposit {
+   public void payment() {
+       System.out.println("Processing payment...");
+   }
+}
+
+
+Withdraw.java
+
+package com.example;
+public class Withdraw {
+   public void drawOut() {
+       System.out.println("Processing withdrawal...");
+   }
+}
+
+
+Beneficiary.java
+
+package com.example;
+public class Beneficiary {
+   public void addBeneficiary() {
+       System.out.println("Adding beneficiary...");
+   }
+}
+
+
+
+
+
+verificatioAspect.java
+
+
+//using point cut
+
+package com.example;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+import org.aspectj.lang.annotation.After;
+import org.aspectj.lang.annotation.Pointcut;
+@Aspect
+public class VerificationAspect {
+   // Define a pointcut for methods in Deposit, Withdraw, and Beneficiary classes
+   @Pointcut("execution(* com.example.Deposit.payment()) || " +
+             "execution(* com.example.Withdraw.drawOut()) || " +
+             "execution(* com.example.Beneficiary.addBeneficiary())")
+   private void transactionalMethods() {}
+   // Before advice using the pointcut
+   @Before("transactionalMethods()")
+   public void accountLogin() {
+       System.out.println("Account Login: Verifying user credentials...");
+   }
+   // After advice using the pointcut
+   @After("transactionalMethods()")
+   public void accountLogout() {
+       System.out.println("Account Logout: Logging out user...");
+   }
+}
+
+
+
+Main.java
+
+package com.example;
+public class Main {
+   public static void main(String[] args) {
+       Deposit deposit = new Deposit();
+       Withdraw withdraw = new Withdraw();
+       Beneficiary beneficiary = new Beneficiary();
+       System.out.println("Starting deposit process:");
+       deposit.payment();
+       System.out.println("\nStarting withdrawal process:");
+       withdraw.drawOut();
+       System.out.println("\nStarting beneficiary addition process:");
+       beneficiary.addBeneficiary();
+   }
+}
+
+Output:-
+
+
+
+
+//3.Create a business class multiplierCode:
+
+Pom.xml
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+   <groupId>com.example</groupId>
+   <artifactId>aop-after-returning-example</artifactId>
+   <version>1.0-SNAPSHOT</version>
+   <dependencies>
+       <!-- AspectJ runtime and weaver -->
+       <dependency>
+           <groupId>org.aspectj</groupId>
+           <artifactId>aspectjrt</artifactId>
+           <version>1.9.9.1</version>
+       </dependency>
+       <dependency>
+           <groupId>org.aspectj</groupId>
+           <artifactId>aspectjweaver</artifactId>
+           <version>1.9.9.1</version>
+       </dependency>
+   </dependencies>
+   <build>
+       <plugins>
+           <plugin>
+               <groupId>org.codehaus.mojo</groupId>
+               <artifactId>aspectj-maven-plugin</artifactId>
+               <version>1.14.0</version>
+               <configuration>
+                   <source>1.8</source>
+                   <target>1.8</target>
+                   <showWeaveInfo>true</showWeaveInfo>
+                   <complianceLevel>1.8</complianceLevel>
+                   <verbose>true</verbose>
+               </configuration>
+               <executions>
+                   <execution>
+                       <goals>
+                           <goal>compile</goal>
+                           <goal>test-compile</goal>
+                       </goals>
+                   </execution>
+               </executions>
+           </plugin>
+       </plugins>
+   </build>
+</project>
+
+Multiplier.java
+
+package com.example;
+public class Multiplier {
+   public int multiply(int a, int b) {
+       System.out.println("Calculating product of " + a + " and " + b);
+       return a * b;
+   }
+}
+
+AdderAfterReturnAspect.java
+
+package com.example;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.AfterReturning;
+@Aspect
+public class AdderAfterReturnAspect {
+   // After-returning advice
+   @AfterReturning(pointcut = "execution(public int com.example.Multiplier.multiply(int, int))", returning = "result")
+   public void afterReturningAdvice(int result) {
+       System.out.println("Original product result: " + result);
+       int modifiedResult = result + 10;
+       System.out.println("Modified result after adding 10: " + modifiedResult);
+   }
+}
+
+Main.java
+
+package com.example;
+public class Main {
+   public static void main(String[] args) {
+       Multiplier multiplier = new Multiplier();
+       System.out.println("Result from multiply method:");
+       int product = multiplier.multiply(9, 11);
+       // Print the final returned value from the multiply method
+       System.out.println("Final product value returned: " + product);
+   }
+}
+
+
+Output:-
+
+
+
+
+
+
+
+
+
+
+ //4.Create a voter cCode:-
+
+Pom.xml
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+   <groupId>com.example</groupId>
+   <artifactId>aop-after-throwing-example</artifactId>
+   <version>1.0-SNAPSHOT</version>
+   <dependencies>
+       <!-- AspectJ runtime and weaver -->
+       <dependency>
+           <groupId>org.aspectj</groupId>
+           <artifactId>aspectjrt</artifactId>
+           <version>1.9.9.1</version>
+       </dependency>
+       <dependency>
+           <groupId>org.aspectj</groupId>
+           <artifactId>aspectjweaver</artifactId>
+           <version>1.9.9.1</version>
+       </dependency>
+   </dependencies>
+   <build>
+       <plugins>
+           <plugin>
+               <groupId>org.codehaus.mojo</groupId>
+               <artifactId>aspectj-maven-plugin</artifactId>
+               <version>1.14.0</version>
+               <configuration>
+                   <source>1.8</source>
+                   <target>1.8</target>
+                   <showWeaveInfo>true</showWeaveInfo>
+                   <complianceLevel>1.8</complianceLevel>
+                   <verbose>true</verbose>
+               </configuration>
+               <executions>
+                   <execution>
+                       <goals>
+                           <goal>compile</goal>
+                           <goal>test-compile</goal>
+                       </goals>
+                   </execution>
+               </executions>
+           </plugin>
+       </plugins>
+   </build>
+</project>
+
+
+
+
+Voter.java
+
+package com.example;
+public class Voter {
+   private String name;
+   private int age;
+   public Voter(String name, int age) {
+       this.name = name;
+       this.age = age;
+   }
+   public void checkEligibility() throws IllegalVoterException {
+       System.out.println("Checking eligibility for voter: " + name);
+       if (age < 18) {
+           throw new IllegalVoterException("Voter " + name + " is underage: " + age);
+       }
+       System.out.println("Voter " + name + " is eligible to vote.");
+   }
+}
+
+
+
+
+UnderageVoterException.java
+
+package com.example;
+public class IllegalVoterException extends Exception {
+   /**
+	 *
+	 */
+	private static final long serialVersionUID = 1L;
+	public IllegalVoterException(String message) {
+       super(message);
+   }
+}
+
+
+IllegalVoterAspect.java
+
+package com.example;
+import org.aspectj.lang.annotation.AfterThrowing;
+import org.aspectj.lang.annotation.Aspect;
+@Aspect
+public class IllegalVoterAspect {
+   // After-throwing advice
+   @AfterThrowing(pointcut = "execution(* com.example.Voter.checkEligibility(..))", throwing = "exception")
+   public void handleIllegalVoterException(IllegalVoterException exception) {
+       System.out.println("IllegalVoterAspect: Exception caught - " + exception.getMessage());
+       System.out.println("Alert: Illegal voting attempt detected!");
+   }
+}
+
+Main.java
+
+package com.example;
+public class Main {
+   public static void main(String[] args) {
+       Voter eligibleVoter = new Voter("Satyam", 25);
+       Voter underageVoter = new Voter("Shivam", 14);
+       try {
+           eligibleVoter.checkEligibility();
+       } catch (IllegalVoterException e) {
+           System.out.println("Exception: " + e.getMessage());
+       }
+       try {
+           underageVoter.checkEligibility();
+       } catch (IllegalVoterException e) {
+           System.out.println("Exception: " + e.getMessage());
+       }
+   }
+}
+
+
+
+Output:-
+
+
+
+
+
+
+
+

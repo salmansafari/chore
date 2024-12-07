@@ -1,0 +1,277 @@
+
+//1
+
+helloworld/pom.xml:-
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+
+xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+
+http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<modelVersion>4.0.0</modelVersion>
+<groupId>com.example</groupId>
+<artifactId>helloworld</artifactId>
+<version>1.0-SNAPSHOT</version>
+<properties>
+<spring.version>5.3.20</spring.version>
+</properties>
+<dependencies>
+<dependency>
+<groupId>org.springframework</groupId>
+<artifactId>spring-context</artifactId>
+<version>${spring.version}</version>
+</dependency>
+<dependency>
+<groupId>org.slf4j</groupId>
+<artifactId>slf4j-api</artifactId>
+<version>1.7.30</version>
+</dependency>
+<dependency>
+<groupId>org.slf4j</groupId>
+<artifactId>slf4j-simple</artifactId>
+<version>1.7.30</version>
+</dependency>
+</dependencies>
+</project>
+
+AppConfig.java:-
+
+package com.example;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+@Configuration
+@ComponentScan(basePackages = "com.example")
+public class AppConfig {
+}
+
+HelloWorldService.java:-
+
+package com.example;
+import org.springframework.stereotype.Service;
+@Service
+public class HelloWorldService {
+public void sayHello() {
+System.out.println("Hello, World!");
+}
+}
+
+MainApp.java:
+
+package com.example;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+public class MainApp {
+public static void main(String[] args) {
+
+ApplicationContext context = new
+
+AnnotationConfigApplicationContext(AppConfig.class);
+
+HelloWorldService helloWorldService =
+
+context.getBean(HelloWorldService.class);
+helloWorldService.sayHello();
+}
+}
+Output:-
+
+
+
+
+
+
+
+//2 Use constructor injection to invoke object of
+
+ShapeRectangleSpring/pom.xml:-
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+
+xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+
+http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<modelVersion>4.0.0</modelVersion>
+<groupId>com.example</groupId>
+<artifactId>ShapeRectangleSpring</artifactId>
+<version>1.0-SNAPSHOT</version>
+<properties>
+<spring.version>5.3.20</spring.version>
+</properties>
+<dependencies>
+<dependency>
+<groupId>org.springframework</groupId>
+<artifactId>spring-context</artifactId>
+<version>${spring.version}</version>
+</dependency>
+</dependencies>
+</project>
+
+Shape.java
+package com.example.shape;
+public class Shape {
+private String shapeType;
+public Shape(String shapeType) {
+this.shapeType = shapeType;
+}
+public String getShapeType() {
+return shapeType;
+}
+}
+
+Rectangle.java
+
+package com.example.shape;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+@Component
+public class Rectangle {
+private Shape shape;
+@Autowired // Constructor injection
+public Rectangle(Shape shape) {
+this.shape = shape;
+}
+public void draw() {
+System.out.println("Drawing a " + shape.getShapeType()+" using constructor
+injection");
+}
+}
+AppConfig.java
+
+package com.example.shape;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+@Configuration
+@ComponentScan(basePackages = "com.example.shape")
+public class AppConfig {
+@Bean
+public Shape shape() {
+return new Shape("Rectangle");
+}
+}
+
+MainApp.java
+
+package com.example.shape;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+public class MainApp {
+public static void main(String[] args) {
+
+ApplicationContext context = new
+
+AnnotationConfigApplicationContext(AppConfig.class);
+Rectangle rectangle = context.getBean(Rectangle.class);
+rectangle.draw();
+}
+}
+
+Output:
+
+
+//3 setter
+
+student/pom.xml
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+
+xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+
+http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<modelVersion>4.0.0</modelVersion>
+<groupId>com.example</groupId>
+<artifactId>student</artifactId>
+<version>1.0-SNAPSHOT</version>
+<properties>
+<spring.version>5.3.20</spring.version>
+</properties>
+<dependencies>
+<dependency>
+<groupId>org.springframework</groupId>
+<artifactId>spring-context</artifactId>
+<version>${spring.version}</version>
+</dependency>
+</dependencies>
+</project>
+
+Address.java
+
+package com.example.students;
+public class Address {
+private String city;
+private String state;
+public Address(String city, String state) {
+this.city = city;
+this.state = state;
+}
+public String getCity() {
+return city;
+}
+public String getState() {
+return state;
+}
+}
+
+Student.java
+
+package com.example.students;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+@Component
+public class Student {
+private Address address;
+// Setter injection
+@Autowired
+public void setAddress(Address address) {
+this.address = address;
+}
+public void displayStudentInfo() {
+System.out.println("****Setter Injection****");
+System.out.println("Student lives in " + address.getCity() + ", " +
+
+address.getState());
+}
+}
+
+AppConfig.java
+
+package com.example.students;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+@Configuration
+@ComponentScan(basePackages = "com.example.students")
+public class AppConfig {
+@Bean
+public Address address() {
+return new Address("Mumbai", "Maharashtra");
+}
+}
+
+MainApp.java
+
+package com.example.students;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+public class MainApp {
+public static void main(String[] args) {
+
+ApplicationContext context = new
+
+AnnotationConfigApplicationContext(AppConfig.class);
+Student student = context.getBean(Student.class);
+student.displayStudentInfo();
+}
+}
+Output:
+
+
+
+
+
+
+
+
+
+

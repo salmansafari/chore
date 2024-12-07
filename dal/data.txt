@@ -1,0 +1,154 @@
+setwd("D:/")
+
+getwd()
+
+
+
+
+
+
+#Using Data()
+
+data()
+
+
+
+
+
+
+
+
+a<-c(10,20,30)
+print(a)
+rm(a)
+print(a)
+
+
+
+
+
+Program 4: Attaching and Detaching Data
+
+Code: 
+
+data<-data.frame(x1=c(10,20,30),
+                 x2=c(40,50,60),
+                 x3=c(70,80,90))
+print(data)
+
+attach(data)
+x1
+
+detach(data)
+
+
+
+
+
+
+Add Rows and columns using rbind() and cbind()
+
+Code:
+
+# Create a data frame
+Data_emp <- data.frame (
+  emp_name = c("X", "Y", "Z"),
+  emp_id = c(202, 209, 220),
+  sal = c(6000, 3000, 4500)
+)
+Data_Frame
+New_row <- rbind(Data_emp, c("M", 210, 1100)) # Add a new row
+New_row
+New_col<- cbind(Data_emp, Role = c("AM", "PM", "SA")) # Add a new column
+New_col
+Data_Frame <- Data_emp[-c(1), -c(1)] # Remove the first row and column
+Data_emp
+dim(Data_emp) #Amount of Rows and Columns
+
+Output:
+
+
+#Reading data from the console
+
+
+
+var1=readline(prompt = "Enter the Number : ");
+var1=as.integer(var1)
+print(var1)
+
+Output:
+
+
+
+# data sources(.csv)
+
+Code:
+
+install.packages("readr")
+library(readr)
+csvdata<-read.csv("order.csv")
+csvdata
+
+Output:
+
+
+
+#sources.(excel)
+
+Code:
+
+install.packages("readxl")
+library(readxl);
+data<-read_excel("order.xlsx");
+data
+
+
+
+
+
+
+# Load the iris dataset
+data(iris)
+# Print the CO2 dataset
+print(iris)
+# Display the first few rows of the dataset
+head(iris)
+# Get the number of rows ande colums in the iris dataset
+n_rows <- ncol(iris)
+n_rows
+n_col <- nrow(iris)
+n_col
+# Summary statistics of the dataset
+summary(iris)
+# Structure of the dataset
+str(iris)
+# Filtering rows where Species is 'setosa'
+setosa_data <- subset(iris, Species == "setosa")
+head(setosa_data)
+
+
+
+
+
+
+
+
+#plot
+
+# Install ggplot2
+install.packages("ggplot2")
+# Load ggplot2
+library(ggplot2)
+# Create a scatter plot of Sepal.Length vs Sepal.Width
+ggplot(iris, aes(x = Sepal.Length, y = Sepal.Width, color = Species)) +
+  geom_point() +
+  theme_minimal() +
+  labs(title = "Sepal Length vs Sepal Width", x = "Sepal Length", y = "Sepal
+Width")
+
+
+
+
+
+
+

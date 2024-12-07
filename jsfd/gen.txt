@@ -1,0 +1,120 @@
+//Generics
+
+//class
+
+abstract class Shape {
+	abstract double area();
+}
+
+class Circle extends Shape {
+	private double radius;
+
+	public Circle(double radius) {
+    	this.radius = radius;
+	}
+
+	@Override
+	double area() {
+    	return Math.PI * radius * radius;
+	}
+}
+
+class Square extends Shape {
+	private double side;
+
+	public Square(double side) {
+    	this.side = side;
+	}
+
+	@Override
+	double area() {
+    	return side * side;
+	}
+}
+
+class BoundedShape<T extends Shape> {
+	private T shape;
+
+	public BoundedShape(T shape) {
+    	this.shape = shape;
+
+    }
+
+	public double getArea() {
+    	return shape.area();
+	}
+}
+
+public class Main {
+	public static void main(String[] args) {
+    	Circle circle = new Circle(5);
+    	Square square = new Square(4);
+
+    	BoundedShape<Circle> boundedCircle = new BoundedShape<>(circle);
+    	BoundedShape<Square> boundedSquare = new BoundedShape<>(square);
+
+    	System.out.println("Area of Circle: " + boundedCircle.getArea()); 
+    	System.out.println("Area of Square: " + boundedSquare.getArea()); 
+	}
+}
+
+
+//gen intface
+
+
+interface Shape {
+	double area();
+}
+
+class Circle implements Shape {
+	private double radius;
+
+	public Circle(double radius) {
+    	this.radius = radius;
+	}
+
+	@Override
+	public double area() {
+    	return Math.PI * radius * radius;
+	}
+}
+
+class Square implements Shape {
+	private double side;
+
+	public Square(double side) {
+    	this.side = side;
+	}
+
+	@Override
+	public double area() {
+    	return side * side;
+	}
+}
+
+
+class BoundedShape<T extends Shape> {
+	private T shape;
+
+	public BoundedShape(T shape) {
+    	this.shape = shape;
+	}
+
+	public double getArea() {
+    	return shape.area();
+	}
+}
+
+public class Main {
+	public static void main(String[] args) {
+    	Circle circle = new Circle(5);
+
+        Square square = new Square(4);
+
+    	BoundedShape<Circle> boundedCircle = new BoundedShape<>(circle);
+    	BoundedShape<Square> boundedSquare = new BoundedShape<>(square);
+
+    	System.out.println("Area of Circle: " + boundedCircle.getArea()); 
+    	System.out.println("Area of Square: " + boundedSquare.getArea());
+	}
+}

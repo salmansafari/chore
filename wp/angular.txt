@@ -1,0 +1,299 @@
+npm install -g @angular/cli
+
+ng version
+
+ng new angular-demo
+
+cd angular-demo
+
+ng serve
+
+//create demo component
+ng g c demo 
+
+//custom pipe
+
+ng g p custom
+
+
+
+///////
+
+//custom.pipe.ts
+
+import { Pipe, PipeTransform } from '@angular/core';
+
+@Pipe({
+ name: 'reverse'
+})
+export class CustomPipe implements PipeTransform {
+ transform(value: string): string {
+   return value.split('').reverse().join('');
+ }
+}
+
+//demo/demo.components.html
+
+<div class="container">
+   <h1>Angular Directives and Pipes Demo</h1>
+
+   <!-- Structural Directives -->
+   <div *ngIf="items.length > 0; else noItems">
+       <h2>Item List:</h2>
+       <ul>
+           <li *ngFor="let item of items; let i = index" [ngClass]="{ 'highlight': i % 2 === 0 }">
+               {{ item.name | uppercase }} - {{ item.price | currency:'USD' }}
+               <small>Added on: {{ item.addedDate | date:'mediumDate' }}</small>
+           </li>
+       </ul>
+   </div>
+   <ng-template #noItems>
+       <p>No items available!</p>
+   </ng-template>
+
+   <!-- Attribute Directive -->
+   <button (click)="addItem()" [disabled]="items.length >= 5">Add Item</button>
+
+   <p>Custom Pipe Demo: {{ 'Angular Custom Pipe' | reverse }}</p>
+</div>
+
+//demo/demo.components.ts
+
+
+
+import { CommonModule } from '@angular/common';
+import { Component } from '@angular/core';
+import { CustomPipe } from "../custom.pipe";
+
+@Component({
+ selector: 'app-demo',
+ imports: [CommonModule, CustomPipe],
+ templateUrl: './demo.component.html',
+ styleUrls: ['./demo.component.css']
+})
+export class DemoComponent {
+ items = [
+   { name: 'Book', price: 10.99, addedDate: new Date() },
+   { name: 'Pen', price: 1.49, addedDate: new Date() }
+ ];
+
+ addItem() {
+   this.items.push({
+     name: 'New Item',
+     price: Math.random() * 20,
+     addedDate: new Date()
+   });
+ }
+}
+
+
+//app.componets.ts
+
+
+import { Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+import { DemoComponent } from './demo/demo.component';
+
+@Component({
+ selector: 'app-root',
+ imports: [RouterOutlet, DemoComponent],
+ templateUrl: './app.component.html',
+ styleUrl: './app.component.css'
+})
+export class AppComponent {
+ title = 'directive-pipe-demo';
+}
+
+
+//app.components.html
+
+
+
+<main class="main">
+ <app-demo></app-demo>
+</main>
+
+<router-outlet />
+
+Index.html
+
+<!doctype html>
+<html lang="en">
+<head>
+ <meta charset="utf-8">
+ <title>DirectivePipeDemo</title>
+ <base href="/">
+ <meta name="viewport" content="width=device-width, initial-scale=1">
+ <link rel="icon" type="image/x-icon" href="favicon.ico">
+</head>
+<body>
+ <app-root></app-root>
+</body>
+</html>
+
+
+//main.ts
+
+
+
+import { bootstrapApplication } from '@angular/platform-browser';
+import { appConfig } from './app/app.config';
+import { AppComponent } from './app/app.component';
+
+bootstrapApplication(AppComponent, appConfig)
+ .catch((err) => console.error(err));
+
+
+
+
+
+
+
+
+
+
+
+///////////////Angular form
+
+
+Code:
+
+/reactive-form/reactive-form.components.html
+
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+   <div>
+       <label for="name">Name:</label>
+       <input type="text" id="name" formControlName="name">
+       <div *ngIf="form.get('name')?.errors?.['required']">
+           Name is required
+       </div>
+   </div>
+   <div>
+       <label for="email">Email:</label>
+       <input type="email" id="email" formControlName="email">
+       <div *ngIf="form.get('email')?.errors?.['required']">
+           Email is required
+       </div>
+       <div *ngIf="form.get('email')?.errors?.['email']">
+           Invalid email format
+       </div>
+   </div>
+   <button type="submit" [disabled]="!form.valid">Submit</button>
+</form>
+
+
+//reactive-form/reactive-form.components.ts
+
+import { CommonModule } from '@angular/common';
+import { Component } from '@angular/core';
+import { FormGroup, ReactiveFormsModule, Validators, FormBuilder } from '@angular/forms';
+
+@Component({
+ selector: 'app-reactive-form',
+ standalone: true,
+ imports: [ReactiveFormsModule, CommonModule],
+ templateUrl: './reactive-form.component.html',
+ styleUrl: './reactive-form.component.css'
+})
+export class ReactiveFormComponent {
+ form: FormGroup;
+ constructor(private fb: FormBuilder) {
+   this.form = this.fb.group({
+     name: ['', Validators.required],
+     email: ['', [Validators.required, Validators.email]]
+   });
+ }
+
+ onSubmit() {
+   if (this.form.valid) {
+     console.log(this.form.value);
+   }
+ }
+}
+
+
+
+//template-form/template-form.components.html
+
+<form #f="ngForm" (ngSubmit)="onSubmit(f)">
+   <div>
+       <label for="name">Name:</label>
+       <input type="text" id="name" name="name" ngModel required>
+   </div>
+   <div>
+       <label for="email">Email:</label>
+       <input type="email" id="email" name="email" ngModel required email>
+   </div>
+   <button type="submit" [disabled]="!f.valid">Submit</button>
+</form>
+
+
+template-form/template-form.components.ts
+
+import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+
+@Component({
+ selector: 'app-template-form',
+ imports: [FormsModule],
+ templateUrl: './template-form.component.html',
+ styleUrl: './template-form.component.css'
+})
+export class TemplateFormComponent {
+ onSubmit(form: any): void {
+   console.log('Form Data: ');
+   console.log(form);
+ }
+}
+
+
+
+//app.component.ts
+
+import { Component } from '@angular/core';
+import { RouterLink, RouterOutlet } from '@angular/router';
+import { TemplateFormComponent } from './template-form/template-form.component';
+
+@Component({
+ selector: 'app-root',
+ imports: [RouterOutlet, RouterLink,],
+ templateUrl: './app.component.html',
+ styleUrl: './app.component.css'
+})
+export class AppComponent {
+ title = 'AngularForms';
+}
+
+
+//app.routes.ts
+
+import { Routes } from '@angular/router';
+
+export const routes: Routes = [
+   {
+       path: 'template-form', loadComponent() {
+           return import('./template-form/template-form.component').then(m => m.TemplateFormComponent);
+       },
+   },
+   {
+       path: 'reactive-form', loadComponent() {
+           return import('./reactive-form/reactive-form.component').then(m => m.ReactiveFormComponent);
+       }
+   },
+   { path: '', redirectTo: '/template-form', pathMatch: 'full' }
+];
+
+
+//app.components.html
+
+
+<nav style="background-color: #f8f9fa; padding: 10px;">
+ <a routerLink="/template-form" style="margin-right: 10px;">Template Form</a> |
+ <a routerLink="/reactive-form" style="margin-left: 10px;">Reactive Form</a>
+</nav>
+<router-outlet></router-outlet>
+
+
+
+
+

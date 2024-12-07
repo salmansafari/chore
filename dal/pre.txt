@@ -1,0 +1,126 @@
+
+#Naming and Renaming variables
+
+Code:
+
+#Print Sample dataframe.
+# Load necessary library
+library(dplyr)
+data <- data.frame(
+  ID = 1:6,
+  Country = c("India", "Australia", "Canada", NA, "Germany", "Brazil"),
+  Capital = c("New Delhi", "Canberra", "Ottawa", NA, "Berlin", "Brasília"),
+  Currency = c("INR", "AUD", "CAD", NA, "EUR", "BRL"),
+  GDP = c(2875.14, 1.39, 2.14, NA, 4.2, 1.84),  # GDP in trillion USD
+  Population = c(1393409038, 25499884, 38005238, NA, 83783942, 213993437),  # Population estimates
+  Area_km2 = c(3287263, 7692024, 9984670, NA, 357022, 8515767)  # Area in square kilometers
+)
+
+
+
+
+
+# Rename "Country" to "Country_Name" and "Area_km2" to "Total_Area"
+data <- data %>%
+  rename(Country_Name = Country, Total_Area = Area_km2)
+print("Renamed Data:")
+print(data)
+data
+
+
+
+
+#Adding a new variable.
+
+data <- data %>%
+  mutate(Region = ifelse(Country_Name %in% c("India", "Australia", "Canada"),
+                  "Commonwealth", "Other"))
+
+print(data)
+Output:
+
+
+#Handling missing Data.
+
+# Replace NA in the "Country_Name" column with "Unknown"
+data$Country_Name[is.na(data$Country_Name)] <- "Unknown"
+# Replace NA in the "Capital" column with "Unknown"
+data$Capital[is.na(data$Capital)] <- "Unknown"
+# Replace NA in the "GDP" column with 0
+data$GDP[is.na(data$GDP)] <- 0
+# Replace NA in the "Population" column with the mean (ignoring NAs)
+data$Population[is.na(data$Population)] <- mean(data$Population, na.rm = TRUE)
+print(data)
+Output:
+
+
+\
+data <- data.frame(
+  ID = 1:6,
+  Emp_Age = c(35, 40,NA, NA, 18, 41),
+  Emp_Salary = c(60000, 50000, 25000,NA, 57000, NA)
+)
+
+# Fill missing Age with 0 and missing Salary with a custom value, e.g., 50000
+data$Age[is.na(data$Age)] <- 0
+data$Salary[is.na(data$Salary)] <- 50000
+print("Data after filling missing values with custom values:")
+print(data)
+Output
+
+ 4) Dealing with Categorical Data
+# Convert "Gender" to a factor and encode it as numbers (re-run original data to show example)
+data <- data.frame(
+  Gender = c("Male", "Female", "Male", "Female", "Female", "Male"))
+data$Gender <- as.numeric(factor(data$Gender, levels = c("Male", "Female")))
+print("Data after encoding categorical data:")
+print(data)
+Output:
+
+
+#Data Reduction using subsetting.
+Code:
+# Sample data frame
+data <- data.frame(
+  ID = 1:10,
+  Country = c("India", "Australia", "Canada", "Germany", "Brazil", "USA", "UK", "France", "Italy", "Japan"),
+  GDP = c(2875.14, 1.39, 2.14, 4.2, 1.84, 21.43, 2.83, 2.78, 2.00, 4.97),  # GDP in trillion USD
+  Population = c(1393409038, 25499884, 38005238, 83783942, 213993437, 331002651, 67886011, 65273511, 60244639, 126476461),  # Population estimates
+  Area_km2 = c(3287263, 7692024, 9984670, 357022, 8515767, 9372610, 243610, 551695, 301340, 377975)  # Area in square kilometers)
+print(data)
+Output:
+
+
+# Method 1: Column Subsetting
+# Select only 'Country' and 'GDP' columnsdata_subset_columns <- data[, c("Country", "GDP")]
+print("Subset with Selected Columns (Country and GDP):")
+print(data_subset_columns)
+Output:
+
+ 
+
+
+Method 2: Row Subsetting
+# Filter rows where GDP is greater than 2 trillion USD
+data_subset_rows <- data[data$GDP > 2, ]
+print("Subset with Rows where GDP > 2 trillion USD:")
+print(data_subset_rows)
+Output:
+
+
+
+# Method 3: Combined Column and Row Subsetting
+# Select 'Country' and 'Population' where Population is less than 100 million
+data_combined_subset <- data[data$Population < 100000000, c("Country", "Population")]
+print("Combined Subset with Population < 100 million:")
+print(data_combined_subset)
+
+
+
+
+
+
+
+
+ 
+ 

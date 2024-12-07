@@ -1,0 +1,50 @@
+
+const fs = require('fs');
+
+// Create a file
+fs.writeFile('DemoFile.txt', '', (err) => {
+  if (err) {
+    console.error('Error creating file:', err);
+    return;
+  }
+  console.log('DEMO File created successfully');
+
+  // Write to the file
+  fs.writeFile('DemoFile.txt', 'Hello World, DemoTEXT...!', (err) => {
+    if (err) {
+      console.error('Error writing to file:', err);
+      return;
+    }
+    console.log('File written successfully');
+
+    // Append to the file
+    fs.appendFile('example.txt', '\nAppended text.', (err) => {
+      if (err) {
+        console.error('Error appending to file:', err);
+        return;
+      }
+      console.log('Content appended successfully');
+
+      // Read the file
+      fs.readFile('example.txt', 'utf8', (err, data) => {
+        if (err) {
+          console.error('Error reading file:', err);
+          return;
+        }
+        console.log('File content:', data);
+
+        // Delete the file
+        fs.unlink('example.txt', (err) => {
+          if (err) {
+            console.error('Error deleting file:', err);
+            return;
+          }
+          console.log('File deleted successfully');
+        });
+      });
+    });
+  });
+});
+
+
+

@@ -1,0 +1,375 @@
+#bubblesort
+
+def bubble_sort(arr):
+   n = len(arr)
+   for i in range(n):
+       for j in range(0, n-i-1):
+           if arr[j] > arr[j+1]:
+               arr[j], arr[j+1] = arr[j+1], arr[j]
+   return arr
+
+def second_largest_element(list1, list2):
+   merged_list = list1 + list2
+
+   sorted_list = bubble_sort(merged_list)
+
+   largest = sorted_list[-1]
+   second_largest = None
+
+   for i in range(len(sorted_list) - 2, -1, -1):
+       if sorted_list[i] < largest:
+           second_largest = sorted_list[i]
+           break
+   return second_largest
+
+list1 = [10,20,30,50,70]
+list2 = [25, 32, 4, 60]
+result = second_largest_element(list1, list2)
+print("The second largest element is:", result)
+
+
+
+
+
+#string 
+
+def count_characters(s):
+  uppercase_count = 0
+  lowercase_count = 0
+  digit_count = 0
+
+  for char in s:
+      if char.isupper():
+          uppercase_count += 1
+      elif char.islower():
+          lowercase_count += 1
+      elif char.isdigit():
+          digit_count += 1
+
+  return uppercase_count, lowercase_count, digit_count
+
+input_string = input("Enter the Sentance: ")
+upper, lower, digits = count_characters(input_string)
+print(f"Uppercase letters: {upper}")
+print(f"Lowercase letters: {lower}")
+print(f"Digits: {digits}")
+
+
+
+#stringocc
+
+def count_wordocc(sentence):
+  words = sentence.lower().split()
+
+  count = {}
+
+  for word in words:
+      word = word.strip('.,!?;"\'()')
+      if word in count:
+          count[word] += 1
+      else:
+          count[word] = 1
+
+  return count
+
+input_sentence = input("Enter the Sentances: ")
+word_counts = count_wordocc(input_sentence)
+print(word_counts)
+
+
+
+
+
+
+#Dictionary
+
+def add_key_value_pair(dictionary, key, value):
+   dictionary[key] = value
+   print(f"Added: {key} -> {value}")
+def search_key(dictionary, key):
+   if key in dictionary:
+       print(f"Found: {key} -> {dictionary[key]}")
+   else:
+       print(f"{key} not found in the dictionary.")
+
+def delete_key(dictionary, key):
+   if key in dictionary:
+       del dictionary[key]
+       print(f"Deleted: {key}")
+   else:
+       print(f"{key} not found in the dictionary.")
+
+my_dict = {}
+
+add_key_value_pair(my_dict, 'India', 1)
+add_key_value_pair(my_dict, 'Australia', 2)
+add_key_value_pair(my_dict, 'SriLanka', 3)
+add_key_value_pair(my_dict, 'USA', 4)
+search_key(my_dict, 'India')
+search_key(my_dict, 'England')
+
+delete_key(my_dict, 'USA')
+
+print("Final dictionary:", my_dict)
+
+
+
+#dict
+
+students = {}
+
+def add_student():
+   student_id = input("Enter student ID (e.g., student1): ")
+   if student_id in students:
+       print("Student ID already exists.")
+       return
+
+   name = input("Name: ")
+   address = input("Address: ")
+   age = int(input("Age: "))
+   student_class = input("Class: ")
+
+   # Initialize an empty dictionary for marks
+   marks = {}
+   marks['Java'] = float(input("Marks in Java: "))
+   marks['Python'] = float(input("Marks in Python: "))
+   marks['CPP'] = float(input("Marks in CPP: "))
+   marks['JS'] = float(input("Marks in JS: "))
+   marks['SQL'] = float(input("Marks in SQL: "))
+
+   # Store the student details in the main dictionary
+   students[student_id] = {
+       "name": name,
+       "address": address,
+       "age": age,
+       "class": student_class,
+       "marks": marks
+   }
+   print(f"Student {name} added successfully.")
+
+def delete_student():
+   student_id = input("Enter student ID to delete: ")
+   if student_id in students:
+       del students[student_id]
+       print(f"Student {student_id} deleted successfully.")
+   else:
+       print("Student ID not found.")
+
+def search_student():
+   student_id = input("Enter student ID to search: ")
+   if student_id in students:
+       print(f"{student_id}: {students[student_id]}")
+   else:
+       print("Student ID not found.")
+
+def display_students():
+   if students:
+       print("\nAll Students:")
+       for student_id, details in students.items():
+           print(f"{student_id}: {details}")
+   else:
+       print("No students available.")
+
+def display_menu():
+   print("\nMenu:")
+   print("1. Add Student")
+   print("2. Delete Student")
+   print("3. Search Student")
+   print("4. Display All Students")
+   print("5. Exit")
+
+def main():
+   while True:
+       display_menu()
+       choice = input("Enter your choice (1-5): ")
+
+       if choice == '1':
+           add_student()
+       elif choice == '2':
+           delete_student()
+       elif choice == '3':
+           search_student()
+       elif choice == '4':
+           display_students()
+       elif choice == '5':
+           print("Exiting the program.")
+           display_students()  # Display all students before exiting
+           break
+       else:
+           print("Invalid choice, please try again.")
+
+if __name__ == "__main__":
+   main()
+
+
+
+#concatenate two dictionaries 
+
+
+
+def concatenate_dictionaries(dict1, dict2):
+   result = dict1.copy()
+   result.update(dict2)
+   return result
+
+def sum_of_values(dictionary):
+   return sum(dictionary.values())
+
+dict1 = {}
+dict2 = {}
+
+n1 = int(input("Enter the number of elements for the first dictionary: "))
+for _ in range(n1):
+   key = input("Enter key: ")
+   value = float(input("Enter value: "))
+   dict1[key] = value
+n2 = int(input("Enter the number of elements for the second dictionary: "))
+for _ in range(n2):
+   key = input("Enter key: ")
+   value = float(input("Enter value: "))
+   dict2[key] = value
+
+combined_dict = concatenate_dictionaries(dict1, dict2)
+print("Concatenated Dictionary:", combined_dict)
+
+total_sum = sum_of_values(combined_dict)
+print("Sum of all values:", total_sum)
+
+
+
+
+
+#set
+
+def add_element(s, element):
+   s.add(element)
+   print(f"Added: {element}")
+
+def remove_element(s, element):
+   if element in s:
+       s.remove(element)
+       print(f"Removed: {element}")
+   else:
+       print(f"{element} not found in the set.")
+
+def set_operations(set1, set2):
+   union = set1.union(set2)
+   intersection = set1.intersection(set2)
+   difference = set1.difference(set2)
+   symmetric_difference = set1.symmetric_difference(set2)
+
+   return union, intersection, difference, symmetric_difference
+
+set1 = set()
+set2 = set()
+
+n = int(input("Enter the number of elements for Set A: "))
+for _ in range(n):
+
+   element = input("Enter element for Set A: ")
+   set1.add(element)
+
+
+n = int(input("Enter the number of elements for Set B: "))
+for _ in range(n):
+
+   element = input("Enter element for Set B: ")
+   set2.add(element)
+
+add_element(set1, 6)
+add_element(set2, 3)
+
+remove_element(set1, 2)
+remove_element(set2, 10)
+
+union, intersection, difference, symmetric_difference = set_operations(set1, set2)
+print("Set 1:", set1)
+print("Set 2:", set2)
+print("Union:", union)
+print("Intersection:", intersection)
+print("Difference (Set1 - Set2):", difference)
+print("Symmetric Difference:", symmetric_difference)
+
+
+
+#tuple
+
+Code:
+
+def create_tuple(prompt):
+   elements = input(prompt)
+   return tuple(map(int, elements.split()))
+
+# Create Tuple 1
+tuple1 = create_tuple("Enter elements for Tuple 1 separated by spaces: ")
+
+# Create Tuple 2
+tuple2 = create_tuple("Enter elements for Tuple 2 separated by spaces: ")
+
+first_element = tuple1[0] 
+last_element = tuple1[-1] 
+print("First element:", first_element)
+print("Last element:", last_element)
+
+sliced_tuple = tuple1[1:4]
+print("Sliced tuple:", sliced_tuple)
+
+concatenated_tuple = tuple1 + tuple2
+print("Concatenated tuple:", concatenated_tuple)
+
+repeated_tuple = tuple1 * 2
+print("Repeated tuple:", repeated_tuple)
+
+is_member = 3 in tuple1
+print("Is 3 in tuple1?", is_member)
+
+print("Elements in tuple1:")
+for item in tuple1:
+   print(item, end=' ')
+print()
+
+length_of_tuple = len(tuple1)
+print("Length of tuple1:", length_of_tuple)
+
+count_of_3 = tuple1.count(3)
+print("Count of 3 in tuple1:", count_of_3)
+
+index_of_4 = tuple1.index(4)
+print("Index of 4 in tuple1:", index_of_4)
+
+list_data = [10, 20, 30]
+converted_tuple = tuple(list_data)
+print("Converted tuple from list:", converted_tuple)
+
+
+
+#count until tuple
+
+def count_until_tuple(elements):
+   count = 0
+
+   for element in elements:
+       if isinstance(element, tuple):
+           break
+       count += 1
+
+   return count
+
+example_list = [1, 2, 3, (4, 5), 6, 7]
+result = count_until_tuple(example_list)
+print("Number of elements before the tuple:", result)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

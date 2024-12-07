@@ -1,0 +1,153 @@
+#function
+
+def is_palindrome(s):
+    if len(s) <= 1:
+        return True
+    
+    if s[0] != s[-1]:
+        return False
+    
+    return is_palindrome(s[1:-1])
+
+string = "madam"
+string2 = "sdaas"
+if is_palindrome(string):
+    print(f"'{string}' is a palindrome.")
+else:
+    print(f"'{string}' is not a palindrome.")
+if is_palindrome(string2):
+    print(f"'{string2}' is a palindrome.")
+else:
+    print(f"'{string2}' is not a palindrome.")
+
+
+
+
+
+
+
+def fibonacci(n):
+  
+   if n <= 0:
+       return 0
+   elif n == 1:
+       return 1
+   else:
+       return fibonacci(n - 1) + fibonacci(n - 2)
+
+def print_fibonacci_series(count):
+   for i in range(count):
+       print(fibonacci(i), end=" ")
+
+
+terms = int(input("Enter the number of terms in the Fibonacci series: "))
+
+print_fibonacci_series(terms)
+
+Output:
+
+
+ 
+#binaryeq
+
+def binary_equivalent(n):
+   if n == 0:
+       return "0"
+   elif n == 1:
+       return "1"
+
+   return binary_equivalent(n // 2) + str(n % 2)
+
+number = 56
+print(f"Binary equivalent of {number} is {binary_equivalent(number)}")
+)
+
+
+#lambdafunction
+
+from functools import reduce
+
+# Sample list of numbers
+numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+# 1. Filter: Generate a list of even numbers using filter() and lambda function
+filtered_list = list(filter(lambda x: x % 2 == 0, numbers))
+print("Filtered List (Even numbers):", filtered_list)
+
+# 2. Map: Generate a list of squares of each number using map() and lambda function
+mapped_list = list(map(lambda x: x ** 2, numbers))
+print("Mapped List (Squares of numbers):", mapped_list)
+
+# 3. Reduce: Generate the sum of all numbers using reduce() and lambda function
+sum_of_numbers = reduce(lambda x, y: x + y, numbers)
+print("Reduced List (Sum of numbers):", sum_of_numbers)
+
+
+
+# anonymous function 
+celsius_list = [5, 15, 23, 31, 42, 100]
+
+fahrenheit_list = list(map(lambda c: (9/5) * c + 32, celsius_list))
+
+print("Temperatures in Fahrenheit:", fahrenheit_list)
+
+
+
+
+#module calculator
+
+def add(x, y):
+   return x + y
+
+def subtract(x, y):
+   return x - y
+def multiply(x, y):
+   return x * y
+
+def divide(x, y):
+   if y == 0:
+       return "Cannot divide by zero"
+   return x / y
+
+
+
+
+
+
+main.py
+
+import calculator  # Import the calculator module
+
+def main():
+    print("Welcome to the Calculator Program")
+    print("1. Add")
+    print("2. Subtract")
+    print("3. Multiply")
+    print("4. Divide")
+    
+    choice = input("Enter the number of the operation you want to perform: ")
+
+    # Input numbers for the operation
+    num1 = float(input("Enter the first number: "))
+    num2 = float(input("Enter the second number: "))
+    
+    if choice == '1':
+        result = calculator.add(num1, num2)
+    elif choice == '2':
+        result = calculator.subtract(num1, num2)
+    elif choice == '3':
+        result = calculator.multiply(num1, num2)
+    elif choice == '4':
+        result = calculator.divide(num1, num2)
+    else:
+        result = "Invalid choice"
+    
+    print(f"Result: {result}")
+
+if __name__ == "__main__":
+    main()
+
+
+
+
+

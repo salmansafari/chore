@@ -1,0 +1,87 @@
+//emitter class
+
+
+//main.js
+
+// Import the built-in 'events' module
+const EventEmitter = require('events');
+
+// Create an instance of EventEmitter
+const alarm = new EventEmitter();
+
+// Register a listener for the 'alarmTrigger' event
+alarm.on('alarmTrigger', () => {
+  console.log('Alarm Triggered! Take Action!');
+});
+
+// Register a listener for the 'alarmStop' event
+alarm.on('alarmStop', () => {
+  console.log(' Alarm Stopped! All is clear.');
+});
+
+// Emit the 'alarmTrigger' event
+console.log('Simulating Alarm Events:');
+alarm.emit('alarmTrigger');
+
+// Emit the 'alarmStop' event
+alarm.emit('alarmStop');
+
+
+
+
+
+
+
+
+
+
+//EE 
+
+
+Arrayops.js
+
+const EventEmitter = require('events');
+
+// Create an instance of EventEmitter
+const arrayEmitter = new EventEmitter();
+
+// Define the array for operations
+let numbers = [5, 3, 8, 1, 2];
+
+// Function to sort the array
+const sortArray = () => {
+  console.log('Sorting the array...');
+  const sortedArray = [...numbers].sort((a, b) => a - b);
+  console.log('Sorted Array:', sortedArray);
+};
+
+// Function to reverse the array
+const reverseArray = () => {
+  console.log('Reversing the array...');
+  const reversedArray = [...numbers].reverse();
+  console.log('Reversed Array:', reversedArray);
+};
+
+// Function to search for an element in the array
+const searchElement = (element) => {
+  console.log(`Searching for ${element} in the array...`);
+  const index = numbers.indexOf(element);
+  if (index !== -1) {
+    console.log(`Element ${element} found at index ${index}`);
+  } else {
+    console.log(`Element ${element} not found in the array.`);
+  }
+};
+
+// Registering listeners for events
+arrayEmitter.on('sort', sortArray);
+arrayEmitter.on('reverse', reverseArray);
+arrayEmitter.on('search', searchElement);
+
+// Trigger the events
+console.log('Triggering Events:');
+arrayEmitter.emit('sort'); // Trigger the sort event
+arrayEmitter.emit('reverse'); // Trigger the reverse event
+arrayEmitter.emit('search', 8); // Trigger the search event with a value
+arrayEmitter.emit('search', 10); // Trigger the search event with a value not in the array
+

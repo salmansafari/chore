@@ -1,0 +1,89 @@
+//npm install mysql2
+
+const mysql = require("mysql2");
+
+const connection = mysql.createConnection({
+ host: "localhost",
+ user: "root",
+ password: "user@123",
+ database: "studentdb",
+ port: 3307
+});
+
+connection.connect((err) => {
+ if (err) {
+   console.error("Error connecting to the database:", err.message);
+ } else {
+   console.log("Connected to the database.");
+   performOperations();
+ }
+});
+
+function performOperations() {
+ const createTableQuery = `
+       CREATE TABLE IF NOT EXISTS student (
+           rollno INT PRIMARY KEY,
+           name VARCHAR(50),
+           address VARCHAR(100)
+       )
+   `;
+ connection.query(createTableQuery, (err) => {
+   if (err) {
+     console.error("Error creating table:", err.message);
+   } else {
+     console.log("Table created or already exists.");
+
+     const insertQuery = `
+               INSERT INTO student (rollno, name, address)
+               VALUES
+               (101, 'xyz', 'Delhi'),
+(102, 'Abc', 'Delhi, Delhi'),
+
+           `;
+     connection.query(insertQuery, (err) => {
+       if (err) {
+         console.error("Error inserting records:", err.message);
+       } else {
+         console.log("10 records inserted.");
+
+         const updateQuery = `
+                       UPDATE student
+                       SET address = 'Chembur, Mumbai'
+                       WHERE rollno = 109
+                   `;
+         connection.query(updateQuery, (err) => {
+           if (err) {
+             console.error("Error updating record:", err.message);
+           } else {
+             console.log("Record updated.");
+
+             const deleteQuery = `
+                               DELETE FROM student
+                               WHERE rollno = 105
+                           `;
+             connection.query(deleteQuery, (err) => {
+               if (err) {
+                 console.error("Error deleting record:", err.message);
+               } else {
+                 console.log("Record deleted.");
+
+                 const selectQuery = `SELECT * FROM student`;
+                 connection.query(selectQuery, (err, results) => {
+                   if (err) {
+                     console.error("Error fetching records:", err.message);
+                   } else {
+                     console.log("Records:", results);
+                   }
+                   connection.end();
+                 });
+               }
+             });
+           }
+         });
+       }
+     });
+   }
+ });
+}
+
+

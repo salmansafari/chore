@@ -1,0 +1,58 @@
+ const currentdate= new Date();
+
+
+//2
+const rows=5;
+for(let i=rows;i>=1;i--){
+    let pattern = '';
+    for(let j=1;j<=i;j++){
+        pattern+= j+ '';
+    }
+    console.log(pattern);
+}
+
+
+//3
+const input = process.argv[2];
+const n = parseInt(input);
+
+
+if (isNaN(n) || n <= 0) {
+    console.log("Please enter a valid positive number.");
+} else {
+    let a = 0;
+    let b = 1;
+
+
+    console.log(`Fibonacci series up to ${n} terms:`);
+    for (let i = 1; i <= n; i++) {
+        console.log(a);
+        const next = a + b;
+        a = b;
+        b = next;
+    }
+}
+
+//4
+
+function isPrime(num) {
+    if (num <= 1) {
+        return false;
+    }
+    for (let i = 2; i < num; i++) {
+        if (num % i === 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+const primenumbers=[];
+for (let number = 1; number <= 100; number++) {
+    if (isPrime(number)) {
+            primenumbers.push(number);
+    }
+   
+}
+console.log("Prime numbers between 1 to 100 are: ");
+console.log(primenumbers);

@@ -1,0 +1,166 @@
+#prime
+
+print("Prime numbers between 1 to 100 are: ")
+for num in range(1,100):
+   if num>1:
+       for i in range(2, num):
+           if(num%i)==0:
+               break
+       else:
+           print(num)
+
+
+
+
+
+#armstrong
+
+
+def check_armstrong(num):
+   sum=0
+   temp=num
+   while temp>0:
+       digit=temp%10
+       sum+=digit ** 3
+       temp//= 10
+
+   if num==sum:
+       print(num, "is an Armstrong number ")
+   else:
+       print(num, "Not an Armstrong number ")
+
+num=int(input("Enter the number: "))
+check_armstrong(num)
+
+
+
+#vowel
+
+character=input("Enter the character: ")
+def check_char(character):
+   vowels=['A','E','I','O','U','a','e','i','o','u']
+   if(character in vowels):
+       print(character, "is a vowel")
+   else:
+       print(character,"is a Consonant ")
+
+check_char(character)
+
+
+
+
+#marks
+
+print("  Enter student's marks out of 100  ")
+marks1=int(input("Enter the marks of subject 1: "))
+marks2=int(input("Enter the marks of subject 2: "))
+marks3=int(input("Enter the marks of subject 3: "))
+
+sum=marks1+marks2+marks3
+percent=(sum/300)*100
+
+if(percent>=90):
+   print("Grade O")
+elif(percent<90 and percent>=80):
+   print("Grade A")
+elif(percent<80 and percent>=70):
+   print("Grade B")
+elif(percent<70 and percent>=50):
+   print("Grade C")
+elif(percent<50 and percent>=35):
+   print("Grade D")
+else:
+   print("FAIL")
+
+
+
+#matrices 
+
+X=[[2,3,4],[6,7,1],[5,2,0]]
+Y=[[1,2,3],[0,1,0],[5,8,2]]
+print("Sum of the matrices is : ")
+result=[[0,0,0],[0,0,0],[0,0,0]]
+for i in range(len(X)):
+   for j in range(len(X[0])):
+       result[i][j]=X[i][j]+ Y[i][j]
+
+for k in result:
+   print(k)
+
+Output:
+
+
+
+
+
+#month
+
+
+
+month=input("Enter month name: ")
+
+if month.lower()=='february':
+   print("No. of Days are 28 or 29. ")
+elif(month.lower() in ('April','june','september','november')):
+   print("No. of Days is 30. ")
+elif(month.lower() in ('january','march','july','august','october','december')):
+   print("No. of Days is 31. ")
+else:
+   print("not a valid month name")
+
+
+
+#passwrd
+
+def is_valid_password(password):
+   if len(password) < 6 or len(password) > 16:
+       return False
+
+   has_lower = False
+   has_upper = False
+   has_digit = False
+   has_special = False
+
+   special_characters = "$#@"
+
+   for char in password:
+       if char.islower():
+           has_lower = True
+       elif char.isupper():
+           has_upper = True
+       elif char.isdigit():
+           has_digit = True
+       elif char in special_characters:
+           has_special = True
+
+   return has_lower and has_upper and has_digit and has_special
+
+
+user_password = input("Enter a password: ")
+
+if is_valid_password(user_password):
+   print("Password is valid.")
+else:
+   print("Password is invalid.")
+
+
+#palindrome
+
+num=int(input("Enter a number: "))
+temp=num
+rev=0
+while(num>0):
+   dig=num%10
+   rev=rev*10+dig
+   num=num//10
+if(temp==rev):
+       print(temp,"is a palindrome number")
+else:
+       print(temp,"is not a palindrome number")
+
+
+
+
+
+
+

@@ -1,0 +1,93 @@
+npm install -g typescript
+
+
+Tsc –version
+
+
+
+tsc app.ts
+
+
+
+node app.js
+
+
+
+
+
+let number = 20;
+if (number > 10) {
+  console.log(number," is Greater than 10");
+} else {
+  console.log(number,"is Less than or equal to 10");
+}
+
+
+
+
+
+ 
+
+let day = "Tuesday";
+switch (day) {
+  case "Monday":
+    console.log("Start of the week");
+    break;
+  case "Friday":
+    console.log("End of the week");
+    break;
+  default:
+    console.log("Midweek day");
+}
+
+
+
+
+
+Function 
+
+function greet(name: string): void {
+    console.log(`Hello, ${name}!`);
+  }
+ 
+  greet("Alice");
+function Bye(name):void{
+    console.log(`Bye, ${name}!`);
+}
+
+Bye("Satyam");
+
+
+
+
+Arrow Funtion 
+
+const add = (a: number, b: number): number => a + b;
+console.log(add(100, 200));
+
+
+
+
+
+
+
+class Person {
+    name: string;
+    age: number;
+ 
+    constructor(name: string, age: number) {
+      this.name = name;
+      this.age = age;
+    }
+ 
+    greet(): void {
+      console.log(`Hello, my name is ${this.name} and I am ${this.age} years old.`);
+    }
+  }
+ 
+  const person1 = new Person("Shyam", 55);
+  person1.greet();
+ 
+
+
+

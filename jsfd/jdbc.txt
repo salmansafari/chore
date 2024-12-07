@@ -1,0 +1,353 @@
+//Create table sports 
+
+Pom.xml
+
+<projectxmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<modelVersion>4.0.0</modelVersion>
+<groupId>springjdbc</groupId>
+<artifactId>springjdbc</artifactId>
+<version>0.0.1-SNAPSHOT</version>
+<packaging>jar</packaging>
+<name>springjdbc</name>
+<url>http://maven.apache.org</url>
+<properties>
+<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+</properties>
+<dependencies>
+<dependency>
+<groupId>junit</groupId>
+<artifactId>junit</artifactId>
+<version>3.8.1</version>
+<scope>test</scope>
+</dependency>
+<dependency>
+   <groupId>mysql</groupId>
+   <artifactId>mysql-connector-java</artifactId>
+   <version>8.0.30</version> <!-- Use the appropriate version -->
+</dependency>
+<dependency>
+<groupId>org.springframework</groupId>
+<artifactId>spring-jdbc</artifactId>
+<version>5.3.5</version>
+</dependency>
+<dependency>
+<groupId>org.springframework</groupId>
+<artifactId>spring-context</artifactId>
+<version>5.3.5</version>
+</dependency>
+</dependencies>
+</project>
+
+
+Config.xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-3.0.xsd ">
+<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+<property name="url" value="jdbc:mysql://localhost:3307/Sport_db" />
+<property name="username" value="root" />
+<property name="password" value="user@123" />
+</bean>
+<bean id="sportsTemplate" class="demo.SportsTemplate">
+<property name="dataSource" ref="dataSource" />
+</bean>
+</beans>
+
+
+
+SportsTemplate.java
+
+package demo;
+import javax.sql.DataSource;
+import org.springframework.jdbc.core.JdbcTemplate;
+public class SportsTemplate implements SportsDAO {
+String name;
+String Type;
+int noOfPlayer;
+private DataSource dataSource;
+private JdbcTemplate jdbcTemplateObject;
+public void setDataSource(DataSource dataSource) {
+this.dataSource = dataSource;
+this.jdbcTemplateObject = new JdbcTemplate(dataSource);
+}
+public void delete(String name) {
+String SQL = "delete from sports where name=?";
+jdbcTemplateObject.update( SQL,name);
+System.out.println("Record Deleted With sports name "+ name);
+return;
+}
+public void insert(String name, String type, int no) {
+String SQL = "insert into sports (name, type, no) values (?, ?, ?)";
+jdbcTemplateObject.update(SQL, name, type, no);
+System.out.println("Created Record Name = " + name + " Type = " + type + " no of player = " + no);
+return;
+}
+}
+
+
+SportsDao.java
+
+package demo;
+import java.util.List;
+import javax.sql.DataSource;
+import org.springframework.jdbc.core.JdbcTemplate;
+public interface SportsDAO {
+public void setDataSource(DataSource ds);
+public void insert(String name, String type, int no);
+public void delete(String name);
+}
+
+
+App.java
+
+package demo;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+public class App
+{
+public static void main( String[] args )
+{
+System.out.println( "Sports Data: " );
+ApplicationContext context = new ClassPathXmlApplicationContext("config.xml");
+SportsTemplate temp = (SportsTemplate) context.getBean("sportsTemplate");
+System.out.println("Inserting Records in the Database");
+temp.insert("Kabbadi", "outdoor sport", 7 );
+temp.insert("Soccer", "outdoor sport", 11);
+temp.insert("Rugby", "outdoor", 15);
+temp.insert("Table Tennis", "indoor", 2);
+temp.insert("Chess", "indoor", 2);
+
+System.out.println("Deleting Record in the Datbase ");
+temp.delete("Soccer");
+}
+}
+
+
+
+
+
+
+
+
+
+
+//2Create a table cricketer 
+
+Pom.xml
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+ <modelVersion>4.0.0</modelVersion>
+ <groupId>com.example</groupId>
+ <artifactId>jdbc</artifactId>
+ <version>0.0.1-SNAPSHOT</version>
+ 
+ <dependencies>
+   <!-- Spring Core Dependency -->
+   <dependency>
+       <groupId>org.springframework</groupId>
+       <artifactId>spring-core</artifactId>
+       <version>5.3.23</version>
+   </dependency>
+<dependency>
+   <groupId>org.apache.commons</groupId>
+   <artifactId>commons-dbcp2</artifactId>
+   <version>2.10.0</version>
+</dependency>
+   <!-- Spring JDBC Dependency -->
+   <dependency>
+       <groupId>org.springframework</groupId>
+       <artifactId>spring-jdbc</artifactId>
+       <version>5.3.23</version>
+   </dependency>
+   <!-- MySQL JDBC Driver -->
+   <dependency>
+       <groupId>mysql</groupId>
+       <artifactId>mysql-connector-java</artifactId>
+       <version>8.0.29</version>
+   </dependency>
+   <!-- Spring Context Dependency -->
+   <dependency>
+       <groupId>org.springframework</groupId>
+       <artifactId>spring-context</artifactId>
+       <version>5.3.23</version>
+   </dependency>
+   <!-- JUnit for Testing (Optional) -->
+   <dependency>
+       <groupId>junit</groupId>
+       <artifactId>junit</artifactId>
+       <version>4.13.2</version>
+       <scope>test</scope>
+   </dependency>
+</dependencies>
+</project>
+
+ApplicationContext.xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.springframework.org/schema/beans
+          http://www.springframework.org/schema/beans/spring-beans-4.3.xsd">
+   <!-- DataSource Configuration -->
+   <bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource">
+       <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"/>
+       <property name="url" value="jdbc:mysql://localhost:3307/Cricket_Data"/>
+       <property name="username" value="root"/>
+       <property name="password" value="user@123"/>
+   </bean>
+   <!-- JdbcTemplate Configuration -->
+   <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+       <property name="dataSource" ref="dataSource"/>
+   </bean>
+   <!-- CricketerDAO Configuration -->
+   <bean id="cricketerDAO" class="com.example.model.CricketerDAO">
+       <property name="jdbcTemplate" ref="jdbcTemplate"/>
+   </bean>
+</beans>
+
+
+Cricketer.java
+
+package com.example.model;
+public class Cricketer {
+   private int id;
+   private String name;
+   private int runs;
+   private String bestScore;
+   // Getters and Setters
+   public int getId() {
+       return id;
+   }
+   public void setId(int id) {
+       this.id = id;
+   }
+   public String getName() {
+       return name;
+   }
+   public void setName(String name) {
+       this.name = name;
+   }
+   public int getRuns() {
+       return runs;
+   }
+   public void setRuns(int runs) {
+       this.runs = runs;
+   }
+   public String getBestScore() {
+       return bestScore;
+   }
+   public void setBestScore(String bestScore) {
+       this.bestScore = bestScore;
+   }
+}
+
+
+CricketerDAO.java
+
+package com.example.model;
+
+import com.example.model.Cricketer;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+
+import java.util.List;
+
+public class CricketerDAO {
+    private JdbcTemplate jdbcTemplate;
+
+    // Setter for JdbcTemplate
+    public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
+    // Method to fetch all cricketers
+    public List<Cricketer> getAllCricketers() {
+        String sql = "SELECT * FROM cricketer";
+        RowMapper<Cricketer> rowMapper = new CricketerRowMapper();
+        return jdbcTemplate.query(sql, rowMapper);
+    }
+}
+
+
+CricketerRowMapper.java
+
+package com.example.model;
+
+import com.example.model.Cricketer;
+import org.springframework.jdbc.core.RowMapper;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public class CricketerRowMapper implements RowMapper<Cricketer> {
+    @Override
+    public Cricketer mapRow(ResultSet rs, int rowNum) throws SQLException {
+        Cricketer cricketer = new Cricketer();
+        cricketer.setId(rs.getInt("id"));
+        cricketer.setName(rs.getString("name"));
+        cricketer.setRuns(rs.getInt("runs"));
+        cricketer.setBestScore(rs.getString("best_score"));
+        return cricketer;
+    }
+}
+
+App.java
+
+package com.example.model;
+
+import com.example.model.CricketerDAO;
+import com.example.model.Cricketer;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import java.util.List;
+
+public class App {
+    public static void main(String[] args) {
+        ApplicationContext context = new ClassPathXmlApplicationContext("applicationContext.xml");
+        CricketerDAO cricketerDAO = (CricketerDAO) context.getBean("cricketerDAO");
+
+        List<Cricketer> cricketers = cricketerDAO.getAllCricketers();
+
+        for (Cricketer cricketer : cricketers) {
+            System.out.println("Name: " + cricketer.getName() + ", Runs: " + cricketer.getRuns() +
+                    ", Best Score: " + cricketer.getBestScore());
+        }
+    }
+}
+
+Sql Query
+
+create database Cricket_Data;
+use Cricket_Data;
+CREATE TABLE cricketer (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100),
+    runs INT,
+    best_score VARCHAR(50)
+);
+
+INSERT INTO cricketer (name, runs, best_score) VALUES 
+('Joe Root', 10547, '265*'),
+('Kane Williamson', 945000, '201'),
+('M S Dhoni', 10773, '256*'),
+('Babar azam', 13116, '196'),
+('Ben stokes', 11399, '258');
+
+select * from cricketer;
+
+
+
+Output:
+
+
+
+
+
+
+
+

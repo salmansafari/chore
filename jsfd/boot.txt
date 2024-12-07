@@ -1,0 +1,264 @@
+//1 Exception
+
+Code:
+
+Pom.xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>3.4.0</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>com.example</groupId>
+	<artifactId>SpringBootNumberFormatException</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>SpringBootNumberFormatException</name>
+	<description>Demo project for Spring Boot</description>
+	<url/>
+	<licenses>
+		<license/>
+	</licenses>
+	<developers>
+		<developer/>
+	</developers>
+	<scm>
+		<connection/>
+		<developerConnection/>
+		<tag/>
+		<url/>
+	</scm>
+	<properties>
+		<java.version>17</java.version>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+</project>
+
+
+
+Application.properties
+
+spring.application.name=SpringBootNumberFormatException
+
+
+SpringBootNumberFormatExceptionApplication.java
+
+
+
+
+package com.example.demo;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import java.util.Scanner;
+@SpringBootApplication
+public class SpringBootNumberFormatExceptionApplication implements CommandLineRunner {
+   public static void main(String[] args) {
+       SpringApplication.run(SpringBootNumberFormatExceptionApplication.class, args);
+   }
+   @Override
+   public void run(String... args) {
+       Scanner scanner = new Scanner(System.in);
+       try {
+           // Input Roll Number
+           System.out.print("Enter Roll Number: ");
+           String rollNoInput = scanner.nextLine();
+           int rollNo = Integer.parseInt(rollNoInput);
+           // Input Name
+           System.out.print("Enter Name: ");
+           String name = scanner.nextLine();
+           // Input Marks
+           System.out.print("Enter Marks (out of 100): ");
+           String marksInput = scanner.nextLine();
+           double marks = Double.parseDouble(marksInput);
+           // Input Subject
+           System.out.print("Enter Subject: ");
+           String subject = scanner.nextLine();
+           // Calculate percentage
+           double percentage = (marks / 100) * 100;
+           // Output the details
+           System.out.println("\n--- Student Details ---");
+           System.out.println("Roll Number: " + rollNo);
+           System.out.println("Name: " + name);
+           System.out.println("Marks: " + marks);
+           System.out.println("Subject: " + subject);
+           System.out.println("Percentage: " + percentage + "%");
+       } catch (NumberFormatException ex) {
+           System.err.println("Error: Invalid number format. Please enter numeric values for Roll Number and Marks.");
+       } catch (Exception ex) {
+           System.err.println("An unexpected error occurred: " + ex.getMessage());
+       } finally {
+           scanner.close();
+       }
+   }
+}
+
+Output:
+
+
+
+With Exception
+
+
+
+
+
+
+
+//2cexp.
+
+Code:
+
+
+
+Pom.xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>3.4.0</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>com.example</groupId>
+	<artifactId>BankApplication</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>BankApplication</name>
+	<description>Demo project for Spring Boot</description>
+	<url/>
+	<licenses>
+		<license/>
+	</licenses>
+	<developers>
+		<developer/>
+	</developers>
+	<scm>
+		<connection/>
+		<developerConnection/>
+		<tag/>
+		<url/>
+	</scm>
+	<properties>
+		<java.version>17</java.version>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+</project>
+
+
+
+Application.properties
+
+spring.application.name=BankApplication
+spring.devtools.restart.enabled=true
+
+BankApplication.java
+
+package com.example.demo;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+@SpringBootApplication
+public class BankApplication implements CommandLineRunner {
+   public static void main(String[] args) {
+       SpringApplication.run(BankApplication.class, args);
+   }
+   // Custom Exception
+   static class PayoutOutOfBoundsException extends Exception {
+       public PayoutOutOfBoundsException(String message) {
+           super(message);
+       }
+   }
+   // Bank Class
+   static class Bank {
+       private double balance;
+       // Open account with initial deposit
+       public void open(double initialDeposit) throws PayoutOutOfBoundsException {
+           if (initialDeposit < 500) {
+               throw new PayoutOutOfBoundsException("Initial deposit must be at least 500");
+           }
+           this.balance = initialDeposit;
+           System.out.println("Account opened with balance: " + balance);
+       }
+       // Deposit money
+       public void deposit(double amount) {
+           balance += amount;
+           System.out.println("Deposited: " + amount + ", New Balance: " + balance);
+       }
+       // Withdraw money with minimum balance check
+       public void withdraw(double amount) throws PayoutOutOfBoundsException {
+           if (balance - amount < 500) {
+               throw new PayoutOutOfBoundsException("Insufficient balance! Minimum balance of 500 must be maintained.");
+           }
+           balance -= amount;
+           System.out.println("Withdrew: " + amount + ", New Balance: " + balance);
+       }
+   }
+   @Override
+   public void run(String... args) {
+       Bank bank = new Bank();
+       try {
+           System.out.println("--- Opening Account ---");
+           bank.open(600); // Initial deposit
+           System.out.println("--- Deposit Operation ---");
+           bank.deposit(200);
+           System.out.println("--- Withdrawal Operation ---");
+           bank.withdraw(250);
+           System.out.println("--- Invalid Withdrawal ---");
+           bank.withdraw(600); // Should throw an exception
+       } catch (PayoutOutOfBoundsException e) {
+           System.err.println("Exception: " + e.getMessage());
+       }
+   }
+}
+
+Output:
+
+
+
+
+
+
+

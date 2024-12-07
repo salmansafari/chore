@@ -1,0 +1,353 @@
+Code:
+
+Jsp_1.jsp
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Student Grade Form</title>
+</head>
+<body>
+<h1>Student Grades</h1>
+<form action="graderesult.jsp" method="post">
+
+<label for= "subject1">Subject :1 </label>
+<input type="number" id="subject1" name="subject1" required><br>
+
+<label for= "subject2">Subject :2 </label>
+<input type="number" id="subject2" name="subject2" required><br>
+
+<label for= "subject3">Subject :3 </label>
+<input type="number" id="subject3" name="subject3" required><br>
+
+<label for= "subject4">Subject :4 </label>
+<input type="number" id="subject4" name="subject4" required><br>
+
+<label for= "subject5">Subject :5 </label>
+<input type="number" id="subject5" name="subject5" required><br>
+<br>
+
+<input type="submit" value="submit">
+
+
+</form>
+</body>
+</html>
+
+Graderesult.jsp
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Grade Result</title>
+</head>
+<body>
+<%
+
+int subject1=0,subject2=0,subject3=0,subject4=0,subject5=0;
+
+
+ subject1=Integer.parseInt(request.getParameter("subject1"));
+ subject2=Integer.parseInt(request.getParameter("subject2"));
+ subject3=Integer.parseInt(request.getParameter("subject3"));
+ subject4=Integer.parseInt(request.getParameter("subject4"));
+ subject5=Integer.parseInt(request.getParameter("subject5"));
+
+
+
+double Average=(subject1+subject2+subject3+subject4+subject5)/5.0;
+
+String grade;
+
+if(Average>=90){
+	grade="O";
+}
+else if(Average<90 || Average>=80){
+	grade="A";
+}
+else if(Average<80 || Average>=70){
+	grade="B";
+}
+else if(Average<70 || Average>=50){
+	grade="C";
+}
+else if(Average<50 || Average>=35){
+	grade="D";
+}
+else{
+	grade ="FAIL";
+}
+
+%>
+
+<h1>Grade Result</h1>
+
+<p>Average Marks: <%=Average %></p>
+
+<p>Grade: <%=grade %></p>
+
+<a href="jsp_1.jsp"> Go Back</a>
+</body>
+</html>
+
+
+//2
+
+Code: 
+
+converterForm.jsp
+
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Currency Converter</title>
+</head>
+<body>
+
+<h2>Currency Converter</h2>
+<p>Enter the amount you want to convert and the currency rate (optional).</p>
+
+<form action="converterResult.jsp" method="post">
+    <label for="amount">Amount:</label>
+    <input type="text" id="amount" name="amount" required><br>
+    <br>
+
+    <label for="rate">Currency Rate (optional):</label>
+    <input type="text" id="rate" name="rate">
+    <br>
+	<br>
+    <input type="submit" value="Convert">
+</form>
+
+</body>
+</html>
+
+converterResult.jsp
+
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Conversion Result</title>
+</head>
+<body>
+
+<h2>Conversion Result</h2>
+
+<%
+    String amountStr = request.getParameter("amount");
+    String rateStr = request.getParameter("rate");
+    double convertedAmount = 0;
+
+    if (amountStr != null && !amountStr.isEmpty()) {
+        try {
+            double amount = Double.parseDouble(amountStr);
+            if (rateStr != null && !rateStr.isEmpty()) {
+                double rate = Double.parseDouble(rateStr);
+                convertedAmount = amount * rate;
+            } else {
+                // Default rate (example)
+                double defaultRate = 1.0; // 1:1 conversion if no rate is provided
+                convertedAmount = amount * defaultRate;
+            }
+%>
+            <p>Converted Amount: <%= convertedAmount %></p>
+<%
+        } catch (NumberFormatException e) {
+%>
+            <p style="color: red;">Invalid input. Please enter numeric values.</p>
+<%
+        }
+    } else {
+%>
+        <p style="color: red;">Please enter an amount to convert.</p>
+<%
+    }
+%>
+
+<a href="converterForm.jsp">Convert Another Amount</a>
+
+</body>
+</html>
+
+
+//3loan
+
+Index.jsp
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+   <title>Loan Calculator</title>
+</head>
+<body>
+   <h2>Loan Calculator</h2>
+   <form action="calculateLoan.jsp" method="post">
+   	Principal Loan Amount: <input type="text" name="principal" required><br>
+   	Period of Time (in years): <input type="text" name="period" required><br>
+   	<input type="submit" value="Calculate">
+   </form>
+</body>
+</html>
+
+
+
+CalculateLoan.jsp
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="java.lang.Math" %>
+<%!
+   double calculatePayment(double principal, int years, double rate) {
+   	double monthlyRate = rate / 12 / 100;
+   	int months = years * 12;
+   	return principal * (monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1);
+   }
+   double calculateBalance(double principal, double payment, int months, double rate) {
+   	double monthlyRate = rate / 12 / 100;
+   	return principal * Math.pow(1 + monthlyRate, months) - (payment * (Math.pow(1 + monthlyRate, months) - 1)) / monthlyRate;
+   }
+%>
+<html>
+<head>
+   <title>Loan Calculation Result</title>
+</head>
+<body>
+   <h2>Loan Calculation Result</h2>
+ 
+   <%
+   	double principal = Double.parseDouble(request.getParameter("principal"));
+   	int period = Integer.parseInt(request.getParameter("period"));
+   	double rate;
+ 
+   	if (period >= 1 && period <= 7) {
+       	rate = 5.35;
+   	} else if (period >= 8 && period <= 15) {
+       	rate = 5.5;
+   	} else if (period >= 16 && period <= 30) {
+       	rate = 5.75;
+   	} else {
+       	out.println("<p>Invalid loan period. Please enter a value between 1 and 30 years.</p>");
+       	return;
+   	}
+    	double payment = calculatePayment(principal, period, rate);
+   %>
+<p>Principal Loan Amount: <%= principal %></p>
+   <p>Period: <%= period %> years</p>
+   <p>Interest Rate: <%= rate %>%</p>
+   <p>Monthly Payment: <%= String.format("%.2f", payment) %></p>
+ 
+   <h3>Payment Schedule</h3>
+   <table border="1">
+   	<tr>
+           <th>Month</th>
+           <th>Payment</th>
+           <th>Balance</th>
+           <th>Interest Paid</th>
+   	</tr>
+   	<%
+       	double balance = principal;
+ 
+       	for (int month = 1; month <= period * 12; month++) {
+           	double interestPaid = balance * (rate / 12 / 100);
+           	balance = calculateBalance(principal, payment, month, rate);
+   	%>
+   	<tr>
+           <td><%= month %></td>
+           <td><%= String.format("%.2f", payment) %></td>
+           <td><%= String.format("%.2f", balance) %></td>
+           <td><%= String.format("%.2f", interestPaid) %></td>
+   	</tr>
+   	<%
+       	}
+   	%>
+   </table>
+   <a href="index.jsp">Go Back</a>
+</body>
+</html>
+
+
+//4
+
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ 	<script src="https://cdn.tailwindcss.com"></script>
+ 
+   <title>Change Study Center Application</title>
+</head>
+<body>
+   <div class="flex  flex-col w-screen items-center gap-10">
+   	<h2 class="text-[2rem] my-5">Change Study Center Application 
+Form</h2>
+      	<form action="index.jsp" method="post" class="bg-white  rounded px-8 pt-6 pb-8 mb-4 w-full max-w-md">
+          	<h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Study Center Change Application</h2>
+ 
+          	<div class="mb-4">
+                  <label class="block text-gray-700 text-sm font-bold mb-2" for="studentId">
+                      Student ID:
+                  </label>
+                  <input class=" appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="text" id="studentId" name="studentId" required>
+          	</div>
+ 
+          	<div class="mb-4">
+                  <label class="block text-gray-700 text-sm font-bold mb-2" for="name">
+                      Name:
+                  </label>
+                  <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="text" id="name" name="name" required>
+          	</div>
+ 
+          	<div class="mb-4">
+                  <label class="block text-gray-700 text-sm font-bold mb-2" for="currentCenter">
+                      Current Study Center:
+                  </label>
+                  <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="text" id="currentCenter" name="currentCenter" required>
+          	</div>
+ 
+          	<div class="mb-6">
+                  <label class="block text-gray-700 text-sm font-bold mb-2" for="newCenter">
+                  	New Study Center:
+                  </label>
+              	<select class="shadow appearance-none border 
+rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="newCenter" name="newCenter" required>
+                      <option value="">Select a new study center</option>
+                      <option value="Center A">Center A</option>
+                      <option value="Center B">Center B</option>
+                      <option value="Center C">Center C</option>
+                      <option value="Center D">Center D</option>
+                  </select>
+          	</div>
+ 
+          	<div class="flex items-center justify-center">
+                  <input class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit" value="Submit Application">
+          	</div>
+      	</form>
+ 
+<hr class="border border-[10px] w-1/2"/>
+<div class="flex flex-col item-start">
+   	<%
+       	String studentId = request.getParameter("studentId");
+       	String name = request.getParameter("name");
+       	String currentCenter = request.getParameter("currentCenter");
+       	String newCenter = request.getParameter("newCenter");
+ 
+       	if (studentId != null && name != null && currentCenter != null && newCenter != null) {
+               out.println("<h3>Application Submitted</h3>");
+               out.println("<p>Student ID: " + studentId + "</p>");
+               out.println("<p>Name: " + name + "</p>");
+           	out.println("<p>Current Study Center: " + currentCenter + "</p>");
+               out.println("<p>New Study Center: " + newCenter + "</p>");
+       	}
+   	%>
+   	</div>
+   </div>
+</body>
+</html>
+

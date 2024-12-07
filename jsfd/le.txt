@@ -1,0 +1,24 @@
+//lambdaexp
+
+import java.util.*;
+
+interface demolambda{
+	public void conv(int temp1);
+	
+}
+public class demo {
+    public static void main(String[] args) {
+    	
+    	Scanner scan =new Scanner(System.in);
+    	System.out.println("Enter the Distance in Kilometers to convert: ");
+    	Int temp=scan.nextInt();
+    	demolambda d1=(n)->{
+    		System.out.println("Converted Distance in miles is : "+n*0.621);
+   
+    	};
+    	d1.conv(temp);    	
+}
+    }
+
+
+

@@ -1,0 +1,65 @@
+#K-Means Clustering:
+
+
+library(ggplot2)
+library(datasets)
+
+# Load the iris dataset
+data(iris)
+iris_data <- iris[, 1:2]
+
+# Set the number of clusters (k)
+k <- 3
+
+# Apply K-means clustering to the data
+set.seed(123) # For reproducibility
+kmeans_result <- kmeans(iris_data, centers = k)
+
+# Add the cluster labels to the original data
+iris_data$Cluster <- as.factor(kmeans_result$cluster)
+
+ggplot(iris_data, aes(x = Sepal.Length, y = Sepal.Width, color = Cluster)) +
+  geom_point(size = 3) +
+  geom_point(data = as.data.frame(kmeans_result$centers), 
+             aes(x = Sepal.Length, y = Sepal.Width), 
+             color = "black", size = 4, shape = 8) +  # Add centroids
+  labs(title = "K-means Clustering on Iris Dataset (2 Features)",
+       x = "Sepal Length", y = "Sepal Width") +
+  theme_minimal() +
+  scale_color_manual(values = c("red", "blue", "green"))
+
+
+
+#Hierarchical Clustering:
+
+
+data(mtcars)
+
+head(mtcars)
+
+# Scale the data (important for clustering)
+mtcars_scaled <- scale(mtcars)
+
+# Compute the distance matrix using Euclidean distance
+dist_matrix <- dist(mtcars_scaled, method = "euclidean")
+
+# Perform Hierarchical Clustering using the complete linkage method
+hclust_result <- hclust(dist_matrix, method = "complete")
+
+# Plot the dendrogram
+# Customizing the plot to ensure better visibility of numeric values
+plot(hclust_result, main = "Hierarchical Clustering of mtcars Dataset",
+     xlab = "Car Models", sub = "", cex = 0.8, cex.axis = 0.7)
+
+clusters <- cutree(hclust_result, k = 4)
+
+# Add the cluster labels to the mtcars dataset (for reference)
+mtcars$Cluster <- as.factor(clusters)
+
+# Print out the first few rows with the cluster assignments
+head(mtcars)
+
+
+
+
+

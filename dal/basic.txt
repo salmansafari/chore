@@ -1,0 +1,68 @@
+print("Hello World")
+
+
+A<-100
+B<-200
+
+#Addition
+sum<-A+B
+print(sum)
+#Difference
+diff<-B-A
+print(diff)
+#multiplication
+mul<-A*B
+print(mul)
+
+#Division
+
+div<-B/A
+print(div)
+
+
+
+# Modulus
+x <- 20
+y <- 2
+remainder <- x %% y
+print(remainder)
+
+# Exponentiation
+x <- 6
+y <- 3
+power <- x ^ y
+print(power)
+
+
+
+# Logical AND (&)
+x <- TRUE
+y <- TRUE
+x & y
+
+# Logical OR (|)
+x <- TRUE
+y <- FALSE
+x | y
+
+# Logical XOR (^)
+x <- TRUE
+y <- FALSE
+x ^ y
+
+# Logical NOT (!)
+x <- TRUE
+!x
+
+
+
+num<- 3.14
+num1 <- ceiling(num)
+print(num1)
+num2 <- floor(num)
+print(num2)
+num3 <- sqrt(num)
+print(num3)
+num4 <- round(num,digits = 1)
+print(num4)
+
