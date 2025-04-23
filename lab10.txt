@@ -1,0 +1,197 @@
+## Lab 10-01: Analysis of Lab10-01.exe and Lab10-01.sys
+
+### Question 1: Does this program make any direct changes to the registry?
+
+**Steps**:
+1. Launch Process Monitor (`Procmon.exe`) on the victim VM.
+2. Configure a filter to capture registry operations:
+   - Add condition: `Operation` begins with `RegSet`.
+   - Add condition: `Process Name` is `Lab10-01.exe`.
+   - Apply the filter.
+3. Clear the current event log (`Ctrl+X`).
+4. Copy `Lab10-01.sys` to `C:\Windows\System32`.
+5. Execute `Lab10-01.exe` from any directory on the VM.
+6. Allow the program to run for a few seconds.
+7. In Procmon, review filtered events for `RegSetValue` operations.
+8. Note the registry key, value, and data being written.
+
+---
+
+### Question 2: Can you set a breakpoint with WinDbg to see what is executed in the kernel as a result of the call to `ControlService`?
+
+**Steps**:
+1. On the VM, enable kernel debugging:
+   - Open an elevated command prompt.
+   - Run: `bcdedit /debug on` and `bcdedit /dbgsettings serial debugport:1 baudrate:115200`.
+   - Reboot the VM.
+2. On the host, launch WinDbg and attach to the VM:
+   - File > Kernel Debug > COM.
+   - Set port and baud rate (e.g., `COM1`, `115200`).
+   - Connect and break into the debugger (`Ctrl+Break`).
+3. Set the symbol path in WinDbg:
+   ```windbg
+   .sympath srv*C:\Symbols*https://msdl.microsoft.com/download/symbols
+   ```
+4. Reload symbols:
+   ```windbg
+   .reload /f
+   ```
+5. Verify `ControlService` address:
+   ```windbg
+   x advapi32!ControlService
+   ```
+6. Set a breakpoint on `ControlService`:
+   ```windbg
+   bp advapi32!ControlService
+   ```
+7. Resume execution:
+   ```windbg
+   g
+   ```
+8. On the VM, ensure `Lab10-01.sys` is in `C:\Windows\System32`.
+9. Run `Lab10-01.exe`.
+10. When the breakpoint is hit, inspect the call stack:
+    ```windbg
+    k
+    ```
+11. Step into the function (`t` for step-into, `p` for step-over).
+12. Look for kernel-mode routines (e.g., `NtDeviceIoControlFile` or IRP dispatching).
+13. Use commands like `!irp` or `!devobj` to inspect driver interactions:
+    ```windbg
+    !devobj <device_name>
+    ```
+
+---
+
+### Question 3: What does this program do?
+
+**Steps**:
+1. Open `Lab10-01.exe` in IDA Pro.
+2. Navigate to the `main` function or entry point.
+3. Look for service-related APIs (e.g., `CreateService`, `OpenService`, `ControlService`).
+4. Identify strings or constants for service names or driver paths.
+5. Check for registry-related functions (e.g., `RegSetValueEx`).
+6. Open `Lab10-01.sys` in IDA Pro (select appropriate processor type).
+7. Locate the `DriverEntry` function.
+8. Look for device creation (`IoCreateDevice`) and symbolic link creation (`IoCreateSymbolicLink`).
+9. Identify IOCTL handlers in `IRP_MJ_DEVICE_CONTROL`.
+10. Correlate executable and driver behavior (e.g., service creation, IOCTL commands).
+11. Check registry keys related to the Windows Firewall:
+    - `HKLM\SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy`.
+12. Use `netsh` to confirm firewall status:
+    ```cmd
+    netsh advfirewall show allprofiles
+    ```
+13. In IDA, look for calls to `DeleteService` or driver cleanup routines.
+
+---
+
+## Lab 10-02: Analysis of Lab10-02.exe
+
+### Question 1: Does this program create any files? If so, what are they?
+
+**Steps**:
+1. Launch Process Monitor on the VM.
+2. Configure a filter to capture file operations:
+   - `Operation` contains `CreateFile`.
+   - `Process Name` is `Lab10-02.exe`.
+   - Apply the filter and clear the event log (`Ctrl+X`).
+3. Execute `Lab10-02.exe` on the VM.
+4. Allow the program to run for a few seconds.
+5. Review filtered events for `CreateFile` operations with `Write` or `Generic Write` access.
+6. Note the file path and name of created files.
+7. Navigate to the file path (e.g., `C:\Windows\System32\drivers`).
+8. Confirm the file’s existence and properties.
+
+---
+
+### Question 2: Does this program have a kernel component?
+
+**Steps**:
+1. Launch Resource Hacker and open `Lab10-02.exe`.
+2. Navigate to the resource tree and look for embedded binaries or files.
+3. Check sections like `BINARY`, `RCDATA`, or custom resource names.
+4. Save the embedded resource to disk (e.g., `embedded.sys`).
+5. Inspect the file’s properties (e.g., file type, magic bytes).
+6. Use `strings` or a hex editor to extract strings from `Lab10-02.exe` or the embedded file.
+7. Look for a PDB path indicating debug information.
+
+---
+
+### Question 3: What does this program do?
+
+**Steps**:
+1. Execute `Lab10-02.exe` on the VM.
+2. Use Process Explorer to identify the created service or driver (`Services` tab).
+3. Configure kernel debugging (as in Lab 10-01, Question 2).
+4. Attach WinDbg to the VM and break into the debugger.
+5. List loaded drivers:
+   ```windbg
+   !drvobj <driver_name>
+   ```
+6. If the driver is not loaded after a reboot, start it:
+   - Use `sc start <service_name>` or a Service Control binary.
+7. Set a breakpoint on the driver’s `DriverEntry`:
+   ```windbg
+   bp <driver_name>!DriverEntry
+   ```
+8. Resume execution (`g`) and run `Lab10-02.exe` again.
+9. Step through the driver’s code when the breakpoint is hit.
+10. Look for hooking (e.g., SSDT), hiding processes/files, or modifying kernel structures.
+11. Use IDA Pro to statically analyze the extracted driver.
+
+---
+
+## Lab 10-03: Analysis of Lab10-03.exe and Lab10-03.sys
+
+### Question 1: What does this program do?
+
+**Steps**:
+1. Set up a sandbox (e.g., Cuckoo Sandbox or manual VM snapshot).
+2. Ensure `Lab10-03.sys` is in `C:\Windows\System32`.
+3. Configure the sandbox to monitor network, file, and process activity.
+4. Execute `Lab10-03.exe` in the sandbox.
+5. Allow the program to run for a few minutes.
+6. Review the sandbox report for process activity (e.g., `iexplore.exe` spawning).
+7. Check network activity for URLs accessed.
+8. Note the frequency of browser openings.
+9. Manually run `Lab10-03.exe` on the VM to observe browser behavior.
+10. Verify the URL accessed by the browser.
+
+---
+
+### Question 2: Once this program is running, how do you stop it?
+
+**Steps**:
+1. Open Process Explorer before running `Lab10-03.exe`.
+2. Arrange processes by tree view.
+3. Execute `Lab10-03.exe` with `Lab10-03.sys` in `C:\Windows\System32`.
+4. Observe Process Explorer for new processes (e.g., `iexplore.exe`).
+5. Check the parent process of `iexplore.exe` (e.g., COM object).
+6. Look for `Lab10-03.exe` in the process list.
+7. Terminate all `iexplore.exe` instances:
+   - Right-click and select `Kill Process`.
+8. Identify the service created by `Lab10-03.sys` in Process Explorer (`Services` tab).
+9. Stop the service:
+   ```cmd
+   net stop <service_name>
+   ```
+10. Disable the service:
+    ```cmd
+    sc config <service_name> start= disabled
+    ```
+11. Ensure no new `iexplore.exe` instances are spawned.
+12. Reboot the VM and confirm the behavior is stopped.
+
+---
+
+### Question 3: What does the kernel component do?
+
+**Steps**:
+1. Open `Lab10-03.sys` in IDA Pro (select appropriate kernel driver architecture).
+2. Locate the `DriverEntry` function.
+3. Look for calls to `IoCreateDevice` and `IoCreateSymbolicLink`.
+4. Check the driver’s major function table for `IRP_MJ_DEVICE_CONTROL`.
+5. Analyze the IOCTL dispatch routine for supported control codes.
+6. Correlate the symbolic link (e.g., `\DosDevices\ProcHelper`) with user-mode communication.
+7. Look for kernel-level persistence or process protection mechanisms.

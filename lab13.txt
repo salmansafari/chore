@@ -1,0 +1,244 @@
+## Lab 13-01: Analysis of Lab13-01.exe
+
+### Question 1: Compare strings and dynamic analysis to identify encoded elements.
+
+1. Run `strings` on `Lab13-01.exe`, note `Mozilla/4.0`, `http://%s/%s/`.
+2. Set up Fakenet on the VM.
+3. Run `Lab13-01.exe`, capture network traffic in Fakenet.
+4. Compare URLs and GET requests with strings output.
+5. Identify Base64-encoded resources or URLs not in strings.
+
+---
+
+### Question 2: Use IDA Pro to search for encoding via "xor".
+
+1. Open `Lab13-01.exe` in IDA Pro.
+2. Search for `xor` string (`Alt+B`, text search).
+3. Filter out register-zeroing XORs (e.g., `xor eax, eax`).
+4. Analyze remaining XOR functions, focus on one with encoding logic.
+5. Note the XOR operation’s context (e.g., data manipulation).
+
+---
+
+### Question 3: Identify the key and encoded content.
+
+1. In IDA Pro, locate the XOR function from Question 2.
+2. Trace operands to find the XOR key (e.g., constant or variable).
+3. Identify the input buffer or data being XORed.
+4. Run `Lab13-01.exe` in OllyDbg, set breakpoint on XOR function.
+5. Step through, dump decoded content from memory.
+
+---
+
+### Question 4: Use FindCrypt2, KANAL, and IDA Entropy Plugin for encoding.
+
+1. Load `Lab13-01.exe` in IDA Pro with FindCrypt2 plugin.
+2. Run FindCrypt2, note detected crypto constants.
+3. Use KANAL plugin, check for encryption algorithms.
+4. Run IDA Entropy Plugin, identify high-entropy code sections.
+5. Compare findings with XOR encoding from Question 2.
+
+---
+
+### Question 5: Identify encoding in network traffic.
+
+1. Run `Lab13-01.exe` with Fakenet or Wireshark.
+2. Capture network traffic, focus on GET requests.
+3. Inspect payloads for Base64 patterns (e.g., `[A-Za-z0-9+/]`).
+4. Decode sample payloads manually in CyberChef to confirm Base64.
+5. Note encoding characteristics (e.g., custom alphabet).
+
+---
+
+### Question 6: Locate the Base64 function in disassembly.
+
+1. Open `Lab13-01.exe` in IDA Pro.
+2. Navigate to address `0x004010B1` (Base64 function).
+3. Analyze function for Base64 encoding logic (e.g., lookup tables).
+4. Set breakpoint at `0x004010B1` in OllyDbg, run `Lab13-01.exe`.
+5. Step through to confirm Base64 encoding process.
+
+---
+
+### Question 7: Determine max length of Base64-encoded data and its content.
+
+1. In IDA Pro, locate `sub_4011C9` (caller of Base64 function).
+2. Trace input buffer size passed to Base64 function.
+3. Calculate max Base64 length (input size * 4/3).
+4. Identify encoded data (e.g., hostname) in `sub_4011C9`.
+5. Run `Lab13-01.exe`, capture encoded data in Wireshark.
+
+---
+
+### Question 8: Check for Base64 padding characters (= or ==).
+
+1. In IDA Pro, analyze `sub_4011C9` for input length checks.
+2. Check if hostname length is divisible by 3.
+3. Run `Lab13-01.exe` on a VM with a short hostname (<12 bytes).
+4. Capture Base64 data in Wireshark, inspect for `=` or `==`.
+5. Confirm padding behavior in Base64 function (`0x004010B1`).
+
+---
+
+### Question 9: What does this malware do?
+
+1. Run `Lab13-01.exe` with Fakenet, note beaconing URLs.
+2. Open `Lab13-01.exe` in IDA Pro, analyze `main`.
+3. Look for network functions (e.g., `WinHttpOpen`, `WinHttpConnect`).
+4. Check for data collection (e.g., hostname, system info).
+5. Summarize behavior (e.g., C2 communication, data exfiltration).
+
+---
+
+## Lab 13-02: Analysis of Lab13-02.exe
+
+### Question 1: Determine what the malware creates via dynamic analysis.
+
+1. Launch Process Monitor, filter for `Lab13-02.exe` and `CreateFile`.
+2. Run `Lab13-02.exe` in a Windows XP VM.
+3. Note file creation events (e.g., `temp*` files with random names).
+4. Open created files in a hex editor, inspect for encoded data.
+5. Use Process Explorer to check processes spawned.
+
+---
+
+### Question 2: Use static tools and XOR search for encoding.
+
+1. Open `Lab13-02.exe` in IDA Pro, search for `xor` string.
+2. Filter out register-zeroing XORs, note 6 non-zeroing entries.
+3. Run FindCrypt2 plugin, check for crypto constants.
+4. Use KANAL plugin, look for encryption algorithms.
+5. Run IDA Entropy Plugin, identify high-entropy sections.
+
+---
+
+### Question 3: Identify encoding functions via imported function.
+
+1. Open `Lab13-02.exe` in IDA Pro, locate `WriteFile` calls.
+2. Find `sub_401000` containing `WriteFile`.
+3. Trace callers of `sub_401000` for encoding logic.
+4. Analyze input buffers to `WriteFile` for encoded data.
+5. Set breakpoint on `sub_401000` in OllyDbg, run `Lab13-02.exe`.
+
+---
+
+### Question 4: Locate the encoding function in disassembly.
+
+1. In IDA Pro, analyze `sub_401000` for encoding subroutines.
+2. Look for data transformation (e.g., loops, bitwise operations).
+3. Trace calls to encoding function (e.g., `sub_4012DD`).
+4. Set breakpoint on encoding function in OllyDbg.
+5. Run `Lab13-02.exe`, step through encoding logic.
+
+---
+
+### Question 5: Trace encoded content source.
+
+1. In IDA Pro, trace input to encoding function (`sub_4012DD`).
+2. Identify data source (e.g., system info, user input).
+3. Check for string or buffer initialization before encoding.
+4. Run `Lab13-02.exe` in OllyDbg, breakpoint on `sub_4012DD`.
+5. Dump input buffer to view original content.
+
+---
+
+### Question 6: Identify encoding algorithm or decoding method.
+
+1. In IDA Pro, analyze `sub_4012DD` for encoding algorithm.
+2. Look for custom operations (e.g., non-standard XOR, shifts).
+3. Compare with FindCrypt2/KANAL results for standard algorithms.
+4. Check if `sub_4012DD` supports decoding (e.g., reversible logic).
+5. Test decoding by running `sub_4012DD` on encoded file in OllyDbg.
+
+---
+
+### Question 7: Recover original source of encoded file using instrumentation.
+
+1. Load `Lab13-02.exe` in Immunity Debugger.
+2. Set breakpoint on `sub_4012DD` (encoding/decoding function).
+3. Write Python script to hook `sub_4012DD`, capture input/output.
+4. Run `Lab13-02.exe`, log decoded content from script.
+5. Open a `temp*` file, apply script to decode, verify content.
+
+---
+
+## Lab 13-03: Analysis of Lab13-03.exe
+
+### Question 1: Compare strings and dynamic analysis for encoded elements.
+
+1. Run `strings` on `Lab13-03.exe`, note Base64 index, `practicalmalwareanalysis.com`, `cmd.exe`.
+2. Set up ApateDNS and Wireshark on the VM.
+3. Run `Lab13-03.exe`, capture C2 traffic.
+4. Compare traffic (e.g., encrypted payloads) with strings output.
+5. Identify encoded elements (e.g., command responses).
+
+---
+
+### Question 2: Use static analysis for XOR encoding.
+
+1. Open `Lab13-03.exe` in IDA Pro, search for `xor` (194 entries).
+2. Use regex search for XORs with `[]` (e.g., `xor [eax], ebx`).
+3. Filter out register-zeroing XORs.
+4. Analyze remaining XOR functions for encoding logic.
+5. Note XOR operation at `0x00401AC2` (XOR_OP_1).
+
+---
+
+### Question 3: Use static tools for other encoding mechanisms.
+
+1. Load `Lab13-03.exe` in IDA Pro with FindCrypt2, note crypto constants.
+2. Run KANAL plugin, check for encryption algorithms (e.g., AES).
+3. Use IDA Entropy Plugin, identify high-entropy sections.
+4. Compare FindCrypt2/KANAL results with XOR findings.
+5. Confirm Base64 and AES usage.
+
+---
+
+### Question 4: Identify two encoding techniques.
+
+1. Review Question 3 findings for Base64 and AES.
+2. In IDA Pro, locate Base64 index string usage.
+3. Check `0x00401AC2` for AES-related XOR operations.
+4. Run `Lab13-03.exe` in OllyDbg, breakpoint on Base64/AES functions.
+5. Verify encoding in Wireshark traffic.
+
+---
+
+### Question 5: Determine keys for encoding techniques.
+
+1. In IDA Pro, trace `0x00401AC2` for AES key (e.g., constant or buffer).
+2. Locate Base64 function, note custom index string as key.
+3. Set breakpoints on encoding functions in OllyDbg.
+4. Run `Lab13-03.exe`, dump keys from memory.
+5. Test keys in CyberChef for Base64/AES decoding.
+
+---
+
+### Question 6: Assess sufficiency of AES key.
+
+1. In IDA Pro, analyze AES routine for key usage.
+2. Check for additional parameters (e.g., IV, mode, key size).
+3. Run `Lab13-03.exe` in OllyDbg, breakpoint on AES function.
+4. Capture IV, mode (e.g., CBC), and key size from memory.
+5. Test AES decryption in CyberChef with captured parameters.
+
+---
+
+### Question 7: What does this malware do?
+
+1. Run `Lab13-03.exe` with ApateDNS/Wireshark, note C2 traffic.
+2. Open `Lab13-03.exe` in IDA Pro, analyze `main`.
+3. Look for command execution (`cmd.exe`) and network functions.
+4. Check for Base64/AES encoding of command output.
+5. Summarize as reverse command shell with encrypted C2.
+
+---
+
+### Question 8: Decrypt content from dynamic analysis.
+
+1. Set up ApateDNS and netcat listener on a remote system.
+2. Run Wireshark on the VM, capture `Lab13-03.exe` traffic.
+3. Extract encrypted payloads from Wireshark.
+4. Use CyberChef with AES key, IV, mode from Question 6.
+5. Decode Base64 payloads with custom index string.
+6. Inspect decrypted content (e.g., command output).

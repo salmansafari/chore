@@ -1,0 +1,629 @@
+# Detailed Steps for Malware Analysis
+
+## A) Analysis of Lab05-01.dll (Static Analysis with IDA Pro)
+
+### 1. What is the address of DllMain?
+
+**Steps:**
+- Open **IDA Free** (or a commercial version of IDA Pro) on your analysis machine.
+- Load **Lab05-01.dll**:
+  - Select `File > Open`, choose the DLL, and confirm the file type as a DLL.
+- In the IDA View, locate the **Functions** window (typically on the left).
+  - Find the `DllMain` function in the list.
+- Alternatively, enable **Line Prefixes**:
+  - Go to `Options > General > Line Prefixes` and check the box to display addresses.
+  - Navigate to `DllMain` by double-clicking it in the Functions window.
+- Note the address displayed next to `DllMain` in the IDA View or Functions window.
+
+**Expected Outcome:**
+- The address of `DllMain` is visible (specific address depends on the DLL’s memory layout, e.g., `0x1000XXXX`).
+
+---
+
+### 2. Use the Imports window to browse to gethostbyname. Where is the import located?
+
+**Steps:**
+- In IDA, open the **Imports** window (`View > Open Subviews > Imports`).
+- Scroll or search for the function `gethostbyname` (press `Ctrl+F` and type `gethostbyname`).
+- Select `gethostbyname` and note its address in the `.idata` section.
+- Alternatively, double-click `gethostbyname` to jump to its location in the disassembly view.
+- Record the address, which is provided as **0x100163CC** in the `.idata` section.
+
+**Expected Outcome:**
+- `gethostbyname` is located at `0x100163CC` within the `.idata` section.
+
+---
+
+### 3. How many functions call gethostbyname?
+
+**Steps:**
+- In IDA, locate `gethostbyname` in the Imports window or disassembly view.
+- Right-click `gethostbyname` and select **Jump to xrefs** (or press `X`).
+- A window will display all cross-references (xrefs) to `gethostbyname`, showing functions that call it.
+- Count the number of unique functions listed in the xrefs window.
+
+**Expected Outcome:**
+- The number of functions calling `gethostbyname` depends on the xrefs found (e.g., 1–3 functions).
+
+---
+
+### 4. Focusing on the call to gethostbyname located at 0x10001757, can you figure out which DNS request will be made?
+
+**Steps:**
+- In IDA, jump to address `0x10001757`:
+  - Press `G`, enter `0x10001757`, and press OK.
+- Verify that this address contains a `call` instruction to `gethostbyname`.
+- Trace backward in the disassembly to find the parameter passed to `gethostbyname`:
+  - Look for a `push` instruction before the call, which pushes the hostname string.
+  - Identify the memory address or register containing the hostname (e.g., `push eax` or `push [esp+X]`).
+- Follow the string reference:
+  - If a string is referenced (e.g., via a `lea` or `mov` instruction), double-click to view it.
+  - The string is the DNS hostname queried by `gethostbyname`.
+- If no string is directly visible, check the calling function’s context for string construction.
+
+**Expected Outcome:**
+- The DNS request is for a specific hostname (e.g., a C2 server domain, to be determined from the string).
+
+---
+
+### 5. How many local variables has IDA Pro recognized for the subroutine at 0x10001656?
+
+**Steps:**
+- In IDA, jump to address `0x10001656` (press `G`, enter `0x10001656`).
+- Confirm this is the start of a subroutine (look for `proc near` or a function prologue like `push ebp; mov ebp, esp`).
+- View the disassembly to see local variables:
+  - IDA typically labels local variables as `var_X` in the stack frame (e.g., `[ebp-X]`).
+  - Scroll through the function to count unique `var_X` references in the disassembly.
+- Alternatively, check the **Function Stack Frame** window (`View > Open Subviews > Stack Variables`).
+- Count the variables listed (noted as **20** in the provided information).
+- Note: IDA Free may recognize fewer variables than a paid version.
+
+**Expected Outcome:**
+- IDA Free recognizes **20 local variables** for the subroutine at `0x10001656`.
+
+---
+
+### 6. How many parameters has IDA Pro recognized for the subroutine at 0x10001656?
+
+**Steps:**
+- Jump to `0x10001656` in IDA (press `G`).
+- Check the function’s prologue for parameters:
+  - Parameters are typically labeled as `arg_X` (e.g., `[ebp+8]` for the first parameter).
+  - Look for references to `arg_0` or higher in the disassembly.
+- Count the number of unique `arg_X` references.
+- The provided information indicates `arg_0`, suggesting **1 parameter**.
+
+**Expected Outcome:**
+- IDA recognizes **1 parameter** (`arg_0`) for the subroutine.
+
+---
+
+### 7. Use the Strings window to locate the string \cmd.exe /c in the disassembly. Where is it located?
+
+**Steps:**
+- In IDA, open the **Strings** window (`View > Open Subviews > Strings` or `Shift+F12`).
+- Search for the string `\cmd.exe /c`:
+  - Press `Alt+T` in the Strings window, type `cmd.exe`, and press Enter.
+  - Locate the exact string `\cmd.exe /c`.
+- Double-click the string to jump to its location in the disassembly.
+- Note the address where the string is referenced (e.g., in the `.rdata` section or a `mov` instruction).
+
+**Expected Outcome:**
+- The string `\cmd.exe /c` is located at a specific address (to be determined).
+
+---
+
+### 8. What is happening in the area of code that references \cmd.exe /c?
+
+**Steps:**
+- From the Strings window, jump to the address of `\cmd.exe /c`.
+- Find cross-references to this string:
+  - Right-click the string and select **Jump to xrefs** (or press `X`).
+  - Jump to the subroutine referencing the string.
+- Analyze the subroutine:
+  - Look for instructions using the string (e.g., `push` to prepare for a function call).
+  - Check for calls to APIs like `CreateProcess` or `system`, indicating command execution.
+- Interpret the context (e.g., the string suggests launching `cmd.exe` with a command).
+
+**Expected Outcome:**
+- The code likely executes a command via `cmd.exe /c`, possibly for malicious tasks like downloading or running files.
+
+---
+
+### 9. In the same area, at 0x100101C8, it looks like dword_1008E5C4 is a global variable that helps decide which path to take. How does the malware set dword_1008E5C4? (Hint: Use dword_1008E5C4’s cross-references.)
+
+**Steps:**
+- In IDA, jump to address `0x100101C8` (press `G`, enter `0x100101C8`).
+- Verify the instruction compares `ebx` to `dword_1008E5C4` (e.g., `cmp ebx, dword_1008E5C4`).
+- Find cross-references to `dword_1008E5C4`:
+  - Highlight `dword_1008E5C4`, press `X` to view xrefs.
+  - Look for a `mov` instruction setting the value (e.g., `mov dword_1008E5C4, value`).
+- Trace the `mov` instruction’s context to understand what value is assigned and under what conditions.
+
+**Expected Outcome:**
+- The malware sets `dword_1008E5C4` via a `mov` statement in a cross-referenced function, controlling execution flow.
+
+---
+
+### 10. A few hundred lines into the subroutine at 0x1000FF58, a series of comparisons use memcmp to compare strings. What happens if the string comparison to robotwork is successful (when memcmp returns 0)?
+
+**Steps:**
+- Jump to `0x1000FF58` in IDA (press `G`).
+- Scroll through the subroutine to locate the `memcmp` call comparing the string `robotwork`.
+- Identify the conditional branch:
+  - Look for a `jnz` (jump if not zero) instruction after `memcmp`.
+  - If `memcmp` returns 0 (strings match), the `jnz` is not taken, and execution continues.
+- Analyze the code path following a successful comparison:
+  - Check for function calls, memory modifications, or jumps indicating specific behavior.
+
+**Expected Outcome:**
+- A successful `robotwork` comparison triggers a specific action (e.g., enabling a feature or executing a command).
+
+---
+
+### 11. What does the export PSLIST do?
+
+**Steps:**
+- In IDA, open the **Exports** window (`View > Open Subviews > Exports`).
+- Locate the export named `PSLIST`.
+- Double-click `PSLIST` to jump to its code.
+- Switch to **Graph View**:
+  - Press `Space` to view the control flow graph.
+- Analyze the function’s behavior:
+  - Look for API calls, loops, or data manipulation indicating its purpose (e.g., process listing or enumeration).
+
+**Expected Outcome:**
+- `PSLIST` likely enumerates running processes, typical for backdoors to monitor system activity.
+
+---
+
+### 12. Use the graph mode to graph the cross-references from sub_10004E79. Which API functions could be called by entering this function? Based on the API functions alone, what could you rename this function?
+
+**Steps:**
+- Jump to `sub_10004E79` (press `G`, enter `0x10004E79`).
+- Generate a cross-reference graph:
+  - Go to `View > Graphs > XRefs From`.
+  - IDA will display a graph of functions called by `sub_10004E79`.
+- Identify API calls:
+  - Look for nodes representing Windows API functions (e.g., `CreateProcess`, `socket`).
+- Interpret the APIs to infer functionality:
+  - For example, network-related APIs suggest communication, while file APIs suggest file operations.
+- Propose a new function name based on the APIs (e.g., `NetworkComm` for network APIs).
+
+**Expected Outcome:**
+- APIs and a suggested function name (e.g., `NetworkComm` or `ProcessHandler`) based on the graph.
+
+---
+
+### 13. How many Windows API functions does DllMain call directly? How many at a depth of 2?
+
+**Steps:**
+- Jump to `DllMain` in IDA.
+- Generate a cross-reference chart:
+  - Go to `View > Graphs > User xrefs chart`.
+  - Set the start and end function to `DllMain`.
+  - Set **depth to 1** and count Windows API functions called directly (provided as **4**).
+- Adjust for depth 2:
+  - Change the depth to 2 in the xrefs chart settings.
+  - Count additional APIs called by functions that `DllMain` calls.
+- List the APIs for both depths.
+
+**Expected Outcome:**
+- **Depth 1**: 4 Windows API functions.
+- **Depth 2**: Additional APIs (to be counted).
+
+---
+
+### 14. At 0x10001358, there is a call to Sleep (an API function that takes one parameter containing the number of milliseconds to sleep). Looking backward through the code, how long will the program sleep if this code executes?
+
+**Steps:**
+- Jump to `0x10001358` (press `G`).
+- Confirm the `call Sleep` instruction.
+- Trace backward:
+  - Look for the `push` instruction before the call, which pushes the sleep duration.
+  - Check if `eax` is used (e.g., `push eax`).
+  - Find where `eax` is set (e.g., `mov eax, value` or `imul eax, 1000`).
+- Note the multiplication by 1000, converting seconds to milliseconds.
+- Calculate the sleep duration based on the value in `eax`.
+
+**Expected Outcome:**
+- Sleep duration is `eax * 1000` milliseconds (specific value depends on prior instructions).
+
+---
+
+### 15. At 0x10001701 is a call to socket. What are the three parameters?
+
+**Steps:**
+- Jump to `0x10001701` (press `G`).
+- Confirm the `call socket` instruction.
+- Trace backward for the three `push` instructions before the call:
+  - Parameters are `af` (address family), `type` (socket type), and `protocol`.
+- Note the values or registers pushed (e.g., `push 0`, `push 1`, `push 2`).
+
+**Expected Outcome:**
+- Parameters: `af`, `type`, `protocol` (specific values like `AF_INET`, `SOCK_STREAM`, `IPPROTO_TCP`).
+
+---
+
+### 16. Using the MSDN page for socket and the named symbolic constants functionality in IDA Pro, can you make the parameters more meaningful? What are the parameters after you apply changes?
+
+**Steps:**
+- Refer to the MSDN page for `socket` (https://docs.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-socket).
+- Identify standard values:
+  - `af`: `AF_INET` (2), `AF_INET6` (23), etc.
+  - `type`: `SOCK_STREAM` (1), `SOCK_DGRAM` (2), etc.
+  - `protocol`: `IPPROTO_TCP` (6), `IPPROTO_UDP` (17), etc.
+- In IDA, highlight each `push` instruction for the `socket` parameters at `0x10001701`.
+- Apply symbolic constants:
+  - Right-click the value (e.g., `push 2`), select `Use standard symbolic constant`, and choose the appropriate constant (e.g., `AF_INET`).
+- Repeat for all three parameters.
+- Note the updated parameter names.
+
+**Expected Outcome:**
+- Parameters: `AF_INET`, `SOCK_STREAM`, `IPPROTO_TCP` (or similar, based on values).
+
+---
+
+### 17. Search for usage of the in instruction (opcode 0xED). This instruction is used with a magic string VMXh to perform VMware detection. Is that in use in this malware? Using the cross-references to the function that executes the in instruction, is there further evidence of VMware detection?
+
+**Steps:**
+- In IDA, search for the `in` instruction:
+  - Press `Alt+B` to open the binary search.
+  - Enter `ED` (opcode for `in`) and search.
+  - Note the single occurrence of `in`.
+- Check the context:
+  - Look for the string `VMXh` near the `in` instruction (e.g., in a `cmp` or `mov`).
+- Find cross-references:
+  - Highlight the function containing `in`, press `X` to view xrefs.
+  - Analyze calling functions for additional VMware detection logic (e.g., checking virtualized hardware).
+- Document findings.
+
+**Expected Outcome:**
+- One `in` instruction; presence of `VMXh` and xrefs suggest VMware detection.
+
+---
+
+### 18. Jump your cursor to 0x1001D988. What do you find?
+
+**Steps:**
+- In IDA, jump to `0x1001D988` (press `G`).
+- Examine the disassembly:
+  - Check if it’s code, data, or a string.
+  - The provided information indicates **random data**.
+- Verify the data type (e.g., use `U` to undefine and `C` to redefine as code if needed).
+
+**Expected Outcome:**
+- Random data at `0x1001D988`.
+
+---
+
+### 19. If you have the IDA Python plug-in installed (included with the commercial version of IDA Pro), run Lab05-01.py, an IDA Pro Python script provided with the malware for this book. (Make sure the cursor is at 0x1001D988.) What happens after you run the script?
+
+**Steps:**
+- Note: IDA Free lacks Python support, so this step is theoretical.
+- In IDA Pro (commercial), place the cursor at `0x1001D988`.
+- Load the script:
+  - Go to `File > Script File`, select `Lab05-01.py`.
+- Run the script and observe changes:
+  - The script likely decodes or transforms the random data at `0x1001D988` (e.g., XOR decryption).
+- Open `Lab05-01.py` in a text editor:
+  - Check for operations like XOR, string concatenation, or data parsing.
+- Document the script’s effect (e.g., revealing a hidden string).
+
+**Expected Outcome:**
+- The script decodes data at `0x1001D988` (e.g., into a meaningful string).
+
+---
+
+### 20. With the cursor in the same location, how do you turn this data into a single ASCII string?
+
+**Steps:**
+- In IDA, place the cursor at `0x1001D988`.
+- Convert to ASCII:
+  - Press `A` to define the data as an ASCII string.
+  - If it remains gibberish, check for encryption (e.g., XOR).
+- If XOR is required (per the next question):
+  - Manually apply the XOR key from `Lab05-01.py` using a hex editor or script.
+- Note the resulting string.
+
+**Expected Outcome:**
+- Gibberish without XOR; meaningful string after decryption.
+
+---
+
+### 21. Open the script with a text editor. How does it work?
+
+**Steps:**
+- Open `Lab05-01.py` in a text editor (e.g., Notepad++).
+- Analyze the code:
+  - Look for operations like XOR decryption, string manipulation, or IDA API calls.
+  - The provided information suggests it decodes a string, possibly revealing: “xdoor is this backdoor, string decoded for Practical Malware Analysis Lab”.
+- Summarize the script’s logic (e.g., XORs data at `0x1001D988` with a key).
+
+**Expected Outcome:**
+- The script decodes encrypted data into a string identifying the backdoor.
+
+---
+
+## B) Analysis of Lab06-01.exe
+
+### 1. What is the major code construct found in the only subroutine called by main?
+
+**Steps:**
+- Open **Lab06-01.exe** in IDA Free.
+- Locate the `main` function (typically at `0x401000` or labeled `start`).
+- Identify the subroutine called by `main`:
+  - Note the `call 0x401000` instruction.
+- Analyze `sub_401000`:
+  - Check for constructs like loops, conditionals, or function calls.
+  - Likely a conditional or sequential structure based on network checks.
+
+**Expected Outcome:**
+- A conditional construct (e.g., `if` statement) checking internet connectivity.
+
+---
+
+### 2. What is the subroutine located at 0x40105F?
+
+**Steps:**
+- Jump to `0x40105F` in IDA (press `G`).
+- Analyze the subroutine:
+  - Check parameters pushed before the call (e.g., a string with `\n`).
+  - Note the string format and function behavior (e.g., `printf`).
+- Confirm it’s a printing function based on stack operations.
+
+**Expected Outcome:**
+- Subroutine is `printf`, printing a message with a newline.
+
+---
+
+### 3. What is the purpose of this program?
+
+**Steps:**
+- Trace `main` and its calls:
+  - Note `sub_401000` checks internet connectivity (e.g., via `InternetCheckConnection`).
+  - Success/error messages are printed via `0x40105F`.
+- Interpret the return value (e.g., `1` for success).
+- Summarize: The program tests internet connectivity and reports the result.
+
+**Expected Outcome:**
+- Checks internet connection, prints success/error, returns `1` if connected.
+
+---
+
+## C) Analysis of Lab06-02.exe
+
+### 1. What operation does the first subroutine called by main perform?
+
+**Steps:**
+- Open **Lab06-02.exe** in IDA.
+- Locate `main` and its first call to `sub_401000`.
+- Analyze `sub_401000`:
+  - Check for API calls or logic (e.g., internet connectivity check).
+- Confirm it’s similar to Lab06-01’s connectivity check.
+
+**Expected Outcome:**
+- `sub_401000` checks internet connectivity.
+
+---
+
+### 2. What is the subroutine located at 0x40117F?
+
+**Steps:**
+- Jump to `0x40117F` (press `G`).
+- Analyze the subroutine:
+  - Note the string pushed before the call (e.g., containing `%c`).
+  - Confirm it’s `printf` based on formatting and behavior.
+
+**Expected Outcome:**
+- Subroutine is `printf`, printing formatted output.
+
+---
+
+### 3. What does the second subroutine called by main do?
+
+**Steps:**
+- Identify the second call in `main` (to `sub_401040`).
+- Analyze `sub_401040`:
+  - Look for API calls like `InternetOpen`, `InternetOpenUrl`.
+  - Note it opens `http://www.practicalmalwareanalysis.com/cc.htm`.
+  - Check for `InternetReadFile` reading 512 bytes (`0x200`) into a buffer.
+
+**Expected Outcome:**
+- Opens a URL and reads 512 bytes into a buffer.
+
+---
+
+### 4. What type of code construct is used in this subroutine?
+
+**Steps:**
+- In `sub_401040`, locate the `InternetReadFile` call.
+- Check for branching:
+  - Note conditional paths (e.g., success vs. failure).
+  - Likely an `if-else` construct based on the read result.
+
+**Expected Outcome:**
+- An `if-else` construct handles successful/failed reads.
+
+---
+
+### 5. Are there any network-based indicators for this program?
+
+**Steps:**
+- Extract strings from `sub_401040`:
+  - Identify the URL `http://www.practicalmalwareanalysis.com/cc.htm`.
+  - Note the User-Agent `Internet Explorer 7.5/pma`.
+- Confirm via dynamic analysis:
+  - Run in a VM with Wireshark to capture traffic to the URL.
+
+**Expected Outcome:**
+- Indicators: 
+  - URL: `http://www.practicalmalwareanalysis.com/cc.html`
+  - User-Agent: `Internet Explorer 7.5/pma`
+
+---
+
+### 6. What is the purpose of this malware?
+
+**Steps:**
+- Combine findings:
+  - `sub_401000` checks internet connectivity.
+  - `sub_401040` opens a URL, reads 512 bytes, and checks for `<!--`.
+  - If `<!--` is absent, prints “Error 2.3: Fail to get command\n”.
+- Hypothesize: The malware fetches commands from a C2 server.
+
+**Expected Outcome:**
+- Checks internet, fetches commands from a URL, terminates if no valid command.
+
+---
+
+## D) Analysis of Lab06-03.exe
+
+### 1. Compare the calls in main to Lab 6-2’s main method. What is the new function called from main?
+
+**Steps:**
+- Open **Lab06-03.exe** and **Lab06-02.exe** in IDA.
+- Compare `main` functions:
+  - Lab06-02 calls `sub_401000`, `sub_401040`.
+  - Lab06-03 calls an additional subroutine: `sub_40113`.
+- Note the new call to `sub_40113`.
+
+**Expected Outcome:**
+- New function: `sub_40113`.
+
+---
+
+### 2. What parameters does this new function take?
+
+**Steps:**
+- Jump to `sub_40113` in IDA.
+- Check the function prologue:
+  - Look for `arg_0` (char) and `arg_4` (lpcstr) in the stack frame.
+- Confirm two parameters are passed.
+
+**Expected Outcome:**
+- Parameters: `char`, `lpcstr` (long pointer constant string).
+
+---
+
+### 3. What major code construct does this function contain?
+
+**Steps:**
+- Analyze `sub_40113`:
+  - Look for a single `cmp` and `jmp` with multiple destinations (indicating a jump table).
+  - Note the absence of repeated `cmp`/`je` pairs (ruling out `if-else`).
+- Confirm it’s a **switch statement** with a jump table.
+
+**Expected Outcome:**
+- A switch statement with a jump table.
+
+---
+
+### 4. What can this function do?
+
+**Steps:**
+- In `sub_40113`, note the subtraction:
+  - The `char` parameter is subtracted by `'a'` (e.g., `'a'` becomes 0, `'b'` becomes 1).
+- Analyze the jump table:
+  - Each case corresponds to a character (e.g., case 0 for `'a'`).
+- Interpret: The function processes commands based on the input character.
+
+**Expected Outcome:**
+- Processes commands by mapping characters to cases (e.g., `'a'` to case 0).
+
+---
+
+### 5. Are there any host-based indicators for this malware?
+
+**Steps:**
+- Extract strings from the binary:
+  - Identify `C:\Temp\cc.exe` and `HKLM\Software\Microsoft\Windows\CurrentVersion\Run /v Malware`.
+- Confirm via dynamic analysis:
+  - Run in a VM, use Procmon to verify file creation and registry changes.
+
+**Expected Outcome:**
+- Indicators:
+  - File: `C:\Temp\cc.exe`
+  - Registry: `HKLM\Software\Microsoft\Windows\CurrentVersion\Run /v Malware`
+
+---
+
+### 6. What is the purpose of this malware?
+
+**Steps:**
+- Combine findings:
+  - Like Lab06-02, it checks internet, opens `http://www.practicalmalwareanalysis.com/cc.htm`, reads 512 bytes.
+  - Parses `<!--` and processes the first character via `sub_40113`.
+  - Prints “Success: Parsed command is %c\n” or “Error 2.3: Fail to get command\n”.
+- Hypothesize: Executes commands from a C2 server with persistence.
+
+**Expected Outcome:**
+- Fetches and executes commands from a URL, ensures persistence.
+
+---
+
+## E) Analysis of Lab06-04.exe
+
+### 1. What is the difference between the calls made from the main method in Labs 6-3 and 6-4?
+
+**Steps:**
+- Open **Lab06-04.exe** and **Lab06-03.exe** in IDA.
+- Compare `main` functions:
+  - Identify differences in called subroutines or parameters.
+- Note any new or modified calls (specific differences to be determined).
+
+**Expected Outcome:**
+- Differences in subroutine calls or parameters (to be determined).
+
+---
+
+### 2. What new code construct has been added to main?
+
+**Steps:**
+- Analyze `main` in Lab06-04:
+  - Look for new constructs (e.g., loops, conditionals).
+  - Likely a **loop** for the incremental User-Agent variable.
+
+**Expected Outcome:**
+- A loop construct for tracking runtime.
+
+---
+
+### 3. What is the difference between this lab’s parse HTML function and those of the previous labs?
+
+**Steps:**
+- Locate the HTML parsing function in Lab06-04 (likely similar to `sub_401040`).
+- Compare with Lab06-03:
+  - Note differences in buffer handling, string checks, or command parsing.
+- Document changes (e.g., modified parsing logic).
+
+**Expected Outcome:**
+- Differences in parsing logic (to be determined).
+
+---
+
+### 4. Are there any new network-based indicators for this malware?
+
+**Steps:**
+- Extract strings and analyze network code:
+  - Identify the User-Agent `Internet Explorer 7.50/pma%d`, where `%d` is a runtime counter.
+- Confirm via dynamic analysis:
+  - Run in a VM with Wireshark to capture varying User-Agent values.
+
+**Expected Outcome:**
+- New indicator: `Internet Explorer 7.50/pma%d` (tracks runtime).
+
+---
+
+### 5. What is the purpose of this malware?
+
+**Steps:**
+- Combine findings:
+  - Like previous labs, checks internet, opens `http://www.practicalmalwareanalysis.com/cc.htm`.
+  - Uses a dynamic User-Agent (`pma%d`) to track runtime.
+  - Parses commands similarly to Lab06-03.
+- Hypothesize: Persistent C2 communication with runtime tracking.
+
+**Expected Outcome:**
+- Fetches commands, tracks runtime via User-Agent, ensures persistence.
+

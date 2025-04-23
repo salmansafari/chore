@@ -1,0 +1,604 @@
+# Detailed Steps for Malware Analysis
+
+## A) Analysis of Lab07-01.exe
+
+### 1. How does this program ensure that it continues running (achieves persistence) when the computer is restarted?
+
+**Steps:**
+- Open **Lab07-01.exe** in **IDA Free** or **IDA Pro**.
+- Locate the `main` function (typically at `0x401000` or labeled `start`).
+- Search for persistence mechanisms:
+  - Look for strings or API calls related to services (e.g., `StartServiceCtrlDispatcher`).
+  - Identify the string `MalService` in the strings window (`Shift+F12`).
+- Analyze the code:
+  - Find the call to `StartServiceCtrlDispatcher` with a reference to `sub_401040` (service control function).
+  - Check for a subroutine creating a service (e.g., `CreateService` with `MalService`).
+- Confirm dynamically:
+  - Run the executable in a Windows VM with **Process Monitor (Procmon)**.
+  - Filter for `MalService` in service creation events or registry changes (e.g., `HKLM\System\CurrentControlSet\Services`).
+- Document: The program creates a service named `MalService` for persistence.
+
+**Expected Outcome:**
+- Persistence via a Windows service named `MalService`.
+
+---
+
+### 2. Why does this program use a mutex?
+
+**Steps:**
+- In IDA, search for mutex-related APIs (`CreateMutex`, `OpenMutex`).
+- Locate the string `HGL345` in the strings window.
+- Analyze the code:
+  - Find the call to `OpenMutex` checking for `HGL345`.
+  - If `OpenMutex` succeeds (mutex exists), note the program terminates (e.g., via `ExitProcess`).
+  - If it fails, find the call to `CreateMutex` to create `HGL345`.
+- Interpret: The mutex ensures only one instance runs by checking for an existing mutex.
+
+**Expected Outcome:**
+- Uses mutex `HGL345` to prevent multiple instances.
+
+---
+
+### 3. What is a good host-based signature to use for detecting this program?
+
+**Steps:**
+- Combine static and dynamic analysis:
+  - From strings, note `HGL345` (mutex) and `MalService` (service name).
+- Verify dynamically:
+  - In a VM, run the executable with Procmon.
+  - Filter for mutex creation (`HGL345`) and service registration (`MalService`).
+- Check the filesystem and registry:
+  - Look for `MalService` in `HKLM\System\CurrentControlSet\Services`.
+- Document: Both are unique, hardcoded indicators.
+
+**Expected Outcome:**
+- Signatures: Mutex `HGL345`, Service `MalService`.
+
+---
+
+### 4. What is a good network-based signature for detecting this malware?
+
+**Steps:**
+- In IDA, search for network-related APIs (e.g., `InternetOpen`, `InternetOpenUrl`).
+- Locate the looping function (likely a subroutine called repeatedly).
+- Extract strings:
+  - Find `Internet Explorer 8.0` (User-Agent) and `http://www.malwareanalysisbook.com` (URL).
+- Confirm dynamically:
+  - Run the executable in a VM with **Wireshark**.
+  - Capture HTTP traffic to `http://www.malwareanalysisbook.com` with User-Agent `Internet Explorer 8.0`.
+- Document as network signatures.
+
+**Expected Outcome:**
+- Signatures: User-Agent `Internet Explorer 8.0`, URL `http://www.malwareanalysisbook.com`.
+
+---
+
+### 5. What is the purpose of this program?
+
+**Steps:**
+- Analyze the `main` function in IDA:
+  - Confirm service creation (`MalService`).
+  - Locate the timer setup checking for the year 2100 (834h or January 1, 2100, midnight).
+- Find the thread creation:
+  - Note the creation of 20 threads (`14h`) calling a subroutine at `StartAddress`.
+- Hypothesize:
+  - The timer suggests a delayed payload, possibly for evasion or a specific attack.
+  - Threads indicate parallel malicious tasks (e.g., network communication, file operations).
+- Document: The program is a persistent malware with a delayed, multi-threaded payload.
+
+**Expected Outcome:**
+- Creates a service, waits until 2100, then executes a multi-threaded payload.
+
+---
+
+### 6. When will this program finish executing?
+
+**Steps:**
+- Locate the looping function in IDA (likely a subroutine with a jump).
+- Analyze the loop:
+  - Check for a `jmp` instruction with no conditional `cmp` (unconditional jump).
+  - Confirm the loop runs indefinitely.
+- Verify dynamically:
+  - Run in a VM and monitor with **Process Explorer**; note the process never terminates.
+- Document: The unconditional jump ensures infinite execution.
+
+**Expected Outcome:**
+- Never finishes due to an infinite loop.
+
+---
+
+## B) Analysis of Lab07-02.exe
+
+### 1. How does this program achieve persistence?
+
+**Steps:**
+- Open **Lab07-02.exe** in IDA.
+- Search for persistence mechanisms:
+  - Check for APIs like `RegSetValueEx` (registry), `CreateService` (services), or `SchTasks` (scheduled tasks).
+  - Extract strings for clues (e.g., registry paths, service names).
+- Analyze the code:
+  - Look for modifications to `HKLM\Software\Microsoft\Windows\CurrentVersion\Run` or similar.
+- Confirm dynamically:
+  - Run in a VM with Procmon.
+  - Filter for registry writes, service creation, or file drops in startup folders.
+- Document: No evidence of persistence mechanisms found.
+
+**Expected Outcome:**
+- No persistence mechanism implemented.
+
+---
+
+### 2. What is the purpose of this program?
+
+**Steps:**
+- In IDA, locate the `main` function.
+- Find the call to `OleInitialize`:
+  - Note this initializes the COM library, suggesting COM object execution.
+- Search for COM-related APIs (e.g., `CoCreateInstance`, `CoInitialize`).
+- Hypothesize:
+  - The program likely triggers a COM-based action, possibly opening a webpage (adware behavior).
+- Confirm dynamically:
+  - Run in a VM and monitor with **Process Explorer** for COM activity or browser launches.
+- Document: Likely adware executing a COM object.
+
+**Expected Outcome:**
+- Executes a COM object, likely adware opening a webpage.
+
+---
+
+### 3. When will this program finish executing?
+
+**Steps:**
+- Analyze `main` in IDA:
+  - Trace the execution flow after `OleInitialize`.
+  - Check for calls to open a webpage (e.g., via `ShellExecute` or COM).
+- Confirm dynamically:
+  - Run in a VM; note the program terminates after opening a webpage.
+- Document: Execution ends after the adware action.
+
+**Expected Outcome:**
+- Finishes after opening a webpage.
+
+---
+
+## C) Analysis of Lab07-03.exe and Lab07-03.dll
+
+### 1. How does this program achieve persistence to ensure that it continues running when the computer is restarted?
+
+**Steps:**
+- Open **Lab07-03.exe** and **Lab07-03.dll** in IDA.
+- Search for persistence mechanisms:
+  - Check for registry modifications, service creation, or file drops.
+  - Look for references to `Lab07-03.dll` and `kerne132.dll` (typo for `kernel32.dll`).
+- Analyze the code:
+  - Note the EXE loads the DLL, but no obvious persistence (e.g., no `RegSetValueEx` or `CreateService`).
+- Confirm dynamically:
+  - Run both files in a VM (same directory) with Procmon.
+  - Filter for registry, service, or startup file changes.
+- Document: No clear persistence mechanism; infection of executables may provide persistence.
+
+**Expected Outcome:**
+- No obvious persistence; relies on file infection.
+
+---
+
+### 2. What are two good host-based signatures for this malware?
+
+**Steps:**
+- Extract strings from both files:
+  - From **Lab07-03.dll**, note `kerne132.dll` and mutex `SADFHUHF`.
+- Verify dynamically:
+  - Run in a VM with Procmon.
+  - Filter for file creation (`kerne132.dll`) and mutex creation (`SADFHUHF`).
+- Check the filesystem:
+  - Look for `kerne132.dll` in `C:\Windows\System32`.
+- Document: Both are unique indicators.
+
+**Expected Outcome:**
+- Signatures: File `kerne132.dll`, Mutex `SADFHUHF`.
+
+---
+
+### 3. What is the purpose of this program?
+
+**Steps:**
+- Analyze **Lab07-03.exe** in IDA:
+  - Note it loads **Lab07-03.dll** and references `kerne132.dll`.
+- Analyze **Lab07-03.dll**:
+  - Search for commands `sleep` and `exec` (e.g., in strings or subroutines).
+  - Find network code connecting to `127.26.152.13` (loopback for safety).
+- Hypothesize:
+  - The EXE infects executables to load the DLL, which acts as a RAT with `sleep` (delay) and `exec` (process execution).
+- Confirm dynamically:
+  - Run in a VM with Wireshark; note connections to `127.26.152.13`.
+- Document: File infector deploying a RAT.
+
+**Expected Outcome:**
+- File infector loading a RAT connecting to `127.26.152.13`.
+
+---
+
+### 4. How could you remove this malware once it is installed?
+
+**Steps:**
+- Assess the infection:
+  - Note the malware infects all executables, replacing `kernel32.dll` references with `kerne132.dll`.
+- Attempt removal:
+  - Boot into Safe Mode to avoid process locks.
+  - Delete `kerne132.dll` from `C:\Windows\System32`.
+  - Check for system crashes (likely due to missing `kernel32.dll`).
+- Remediation options:
+  - Replace `kerne132.dll` with a legitimate `kernel32.dll`.
+  - Patch infected executables to reference `kernel32.dll` using a script or recompilation.
+  - Rebuild the system or restore from a clean backup.
+- Document: Removal is complex due to widespread infection.
+
+**Expected Outcome:**
+- Removal requires replacing `kerne132.dll` or rebuilding the system.
+
+---
+
+## D) Analysis of Lab09-01.exe (Using OllyDbg and IDA Pro)
+
+### 1. How can you get this malware to install itself?
+
+**Steps:**
+- Open **Lab09-01.exe** in **OllyDbg**.
+- Note the program pauses at the entry point.
+- Check for installation logic:
+  - Step through (`F8`) to find a command-line check (e.g., for `-in`).
+  - Set a breakpoint at the installation routine (e.g., after the `-in` check).
+- Run with the `-in` argument:
+  - In OllyDbg, go to `Debug > Arguments`, add `-in`, and restart.
+  - Step through to confirm installation (e.g., registry or file changes).
+- Document: The `-in` argument triggers installation.
+
+**Expected Outcome:**
+- Installs with the `-in` command-line argument.
+
+---
+
+### 2. What are the command-line options for this program? What is the password requirement?
+
+**Steps:**
+- In IDA, locate the `main` function.
+- Search for command-line parsing:
+  - Look for `GetCommandLine` or string comparisons.
+  - Note options: `-in`, `-re`, `-c`, `-cc`.
+- Check for a password check:
+  - Find a subroutine comparing input to a hardcoded password (likely after `-in`).
+- Confirm in OllyDbg:
+  - Set a breakpoint at the comparison and run with each option.
+- Document: Options and any password requirement.
+
+**Expected Outcome:**
+- Options: `-in`, `-re`, `-c`, `-cc`. Password requirement to be determined.
+
+---
+
+### 3. How can you use OllyDbg to permanently patch this malware, so that it doesn’t require the special command-line password?
+
+**Steps:**
+- In OllyDbg, locate the password check (e.g., at `0x402510`).
+- Step to the comparison instruction:
+  - Note the function returns `EAX = 1` for success.
+- Patch the code:
+  - Right-click at `0x402510`, select `Assemble`.
+  - Replace with `mov eax, 1` (HEX: `B8 01 00 00 00`).
+  - Save the patch (`File > Copy to Executable > All Modifications`).
+- Test the patched binary:
+  - Run without a password to confirm it executes.
+- Document: Patch sets `EAX = 1` to bypass the check.
+
+**Expected Outcome:**
+- Patch at `0x402510` bypasses the password.
+
+---
+
+### 4. What are the host-based indicators of this malware?
+
+**Steps:**
+- Extract strings in IDA:
+  - Note the registry key `HKLM\SOFTWARE\Microsoft\XPS`.
+- Confirm dynamically:
+  - Run in a VM with Procmon.
+  - Filter for registry writes to `HKLM\SOFTWARE\Microsoft\XPS`.
+- Check for additional indicators (e.g., files or mutexes).
+- Document: The registry key is a primary indicator.
+
+**Expected Outcome:**
+- Indicator: `HKLM\SOFTWARE\Microsoft\XPS`.
+
+---
+
+### 5. What are the different actions this malware can be instructed to take via the network?
+
+**Steps:**
+- In IDA, locate `sub_402020` (also at `0x402020` in OllyDbg).
+- Analyze the subroutine:
+  - Look for string comparisons or command parsing (e.g., `sleep`, `exec`).
+  - Note network-related APIs (e.g., `recv` for command retrieval).
+- Confirm in OllyDbg:
+  - Set a breakpoint at `0x402020` and step through command handling.
+- Document: Actions like process execution or delays.
+
+**Expected Outcome:**
+- Actions: `sleep` (delay), `exec` (run process), others to be determined.
+
+---
+
+### 6. Are there any useful network-based signatures for this malware?
+
+**Steps:**
+- In IDA, locate `sub_401E60` (called before `sub_402020`).
+- Analyze network code:
+  - Look for URLs, IPs, or protocols in strings or API calls.
+- Confirm dynamically:
+  - Run in a VM with Wireshark.
+  - Capture traffic from `sub_401E60` (e.g., to a C2 server).
+- Document: Any unique headers, IPs, or commands.
+
+**Expected Outcome:**
+- Signatures to be determined from `sub_401E60` traffic.
+
+---
+
+## E) Analysis of Lab09-02.exe (Using OllyDbg)
+
+### 1. What strings do you see statically in the binary?
+
+**Steps:**
+- Run `strings` on **Lab09-02.exe**:
+  - In a terminal, use `strings Lab09-02.exe > strings.txt`.
+- Review the output:
+  - Note function names, imports, and the string `cmd`.
+- Confirm in OllyDbg:
+  - Open the executable, view the strings window (`Ctrl+S`).
+- Document: Primarily import/function names and `cmd`.
+
+**Expected Outcome:**
+- Strings: Import/function names, `cmd`.
+
+---
+
+### 2. What happens when you run this binary?
+
+**Steps:**
+- Run **Lab09-02.exe** in a Windows VM.
+- Observe behavior:
+  - Note it terminates instantly with no visible actions.
+- Confirm with Procmon:
+  - Filter for the process; check for file, registry, or network activity.
+- Document: Immediate termination.
+
+**Expected Outcome:**
+- Terminates instantly without visible actions.
+
+---
+
+### 3. How can you get this sample to run its malicious payload?
+
+**Steps:**
+- Open **Lab09-02.exe** in OllyDbg.
+- Set a breakpoint at `0x401626` (noted for `ocl.exe` in `EDX`).
+- Run the program (`F9`) and step through (`F8`):
+  - After `0x401626`, note `EDX` contains `ocl.exe`.
+  - Continue until a comparison fails, causing termination.
+- Patch the comparison:
+  - Locate the failing `cmp` (e.g., comparing `ocl.exe`).
+  - Modify to always succeed (e.g., set `ZF=1` or patch to `jmp`).
+- Run again to trigger the payload (e.g., network or process activity).
+- Document: Patch the comparison for `ocl.exe`.
+
+**Expected Outcome:**
+- Patch comparison at `ocl.exe` check to run the payload.
+
+---
+
+### 4. What is happening at 0x00401133?
+
+**Steps:**
+- In OllyDbg, go to `0x00401133` (`Ctrl+G`).
+- Analyze the instruction:
+  - Note it moves hex values to the stack (e.g., `mov [esp+X], value`).
+- Check context:
+  - Likely part of data setup (e.g., for a string or buffer).
+- Document: Stack manipulation with hex values.
+
+**Expected Outcome:**
+- Moves hex values to the stack segment.
+
+---
+
+### 5. What arguments are being passed to subroutine 0x00401089?
+
+**Steps:**
+- In OllyDbg, set a breakpoint at `0x00401089`.
+- Step to the call:
+  - Note the `push` instructions before the call (e.g., `push edx` for `ocl.exe`).
+- Analyze the stack:
+  - Check values in `ESP` or registers pushed.
+- Document: Arguments like `ocl.exe` or encoded data.
+
+**Expected Outcome:**
+- Arguments to be determined (likely includes `ocl.exe`).
+
+---
+
+### 6. What domain name does this malware use?
+
+**Steps:**
+- In OllyDbg, set a breakpoint after `0x00401089` (decoding routine).
+- Run and step through:
+  - Note `EAX` contains `www.practicalmalwareanalysis.com` before `gethostbyname`.
+- Confirm in IDA:
+  - Locate `sub_401089` and trace the decoding output.
+- Document: The decoded domain.
+
+**Expected Outcome:**
+- Domain: `www.practicalmalwareanalysis.com`.
+
+---
+
+### 7. What encoding routine is being used to obfuscate the domain name?
+
+**Steps:**
+- In OllyDbg, analyze `0x00401089`:
+  - Note the loop with an `XOR` operation against `EDX` (contains a random string).
+- Step through the loop:
+  - Confirm `XOR` decodes the domain iteratively.
+- Confirm in IDA:
+  - Locate `sub_401089` and verify the XOR logic.
+- Document: XOR encoding with a key.
+
+**Expected Outcome:**
+- XOR encoding routine.
+
+---
+
+### 8. What is the significance of the CreateProcessA call at 0x0040106E?
+
+**Steps:**
+- In OllyDbg, go to `0x0040106E` (`Ctrl+G`).
+- Note the `CreateProcessA` call:
+  - Check parameters; it uses `cmd.exe`.
+- Analyze context:
+  - The call is not executed due to a failed C2 beacon.
+  - If executed, it runs `cmd.exe` and waits in a loop.
+- Document: Attempts to execute `cmd.exe` for malicious tasks.
+
+**Expected Outcome:**
+- `CreateProcessA` runs `cmd.exe` but is not called due to C2 failure.
+
+---
+
+## F) Analysis of Lab09-03.exe and DLLs (DLL1.dll, DLL2.dll, DLL3.dll) (Using OllyDbg and IDA Pro)
+
+### 1. What DLLs are imported by Lab09-03.exe?
+
+**Steps:**
+- Open **Lab09-03.exe** in IDA.
+- Open the **Imports** window (`View > Open Subviews > Imports`).
+- Note imported DLLs:
+  - Likely `DLL1.dll`, `DLL2.dll`, `DLL3.dll`, and standard Windows DLLs (e.g., `kernel32.dll`).
+- Confirm in OllyDbg:
+  - Load the executable and check the **Modules** window.
+- Document: The imported DLLs.
+
+**Expected Outcome:**
+- Imported DLLs: `DLL1.dll`, `DLL2.dll`, `DLL3.dll`, others.
+
+---
+
+### 2. What is the base address requested by DLL1.dll, DLL2.dll, and DLL3.dll?
+
+**Steps:**
+- Open each DLL in IDA:
+  - Load `DLL1.dll`, `DLL2.dll`, `DLL3.dll`.
+- Check the **Image Base**:
+  - Go to `View > Open Subviews > Segments`.
+  - Note the preferred base address (e.g., `0x10000000`).
+- Confirm all request the same base address (causing rebasing).
+
+**Expected Outcome:**
+- Base address: Same for all (e.g., `0x10000000`).
+
+---
+
+### 3. When you use OllyDbg to debug Lab09-03.exe, what is the assigned base address for: DLL1.dll, DLL2.dll, and DLL3.dll?
+
+**Steps:**
+- Open **Lab09-03.exe** in OllyDbg with all DLLs in the same directory.
+- Check the **Modules** window:
+  - Note the actual load addresses for `DLL1.dll`, `DLL2.dll`, `DLL3.dll`.
+- Due to base address conflicts, Windows rebases them (e.g., `DLL1.dll` at `0x10000000`, others at `0x00150000`, etc.).
+- Document: The assigned addresses.
+
+**Expected Outcome:**
+- Assigned addresses (e.g., `DLL1.dll`: `0x10000000`, `DLL2.dll`: `0x00150000`, `DLL3.dll`: `0x00200000`).
+
+---
+
+### 4. When Lab09-03.exe calls an import function from DLL1.dll, what does this import function do?
+
+**Steps:**
+- In OllyDbg, set a breakpoint at an import call from `DLL1.dll`.
+- Run and step through:
+  - Note the function outputs the process ID (PID) of the running process.
+- Confirm in IDA:
+  - Locate the exported function in `DLL1.dll` and verify it retrieves the PID (e.g., via `GetCurrentProcessId`).
+- Document: The function returns the PID.
+
+**Expected Outcome:**
+- Returns the process ID of the running process.
+
+---
+
+### 5. When Lab09-03.exe calls WriteFile, what is the filename it writes to?
+
+**Steps:**
+- In IDA, locate the `WriteFile` call in **Lab09-03.exe**.
+- Trace the parameters:
+  - Note the file handle in `ebp+hObject`.
+  - Find the buffer containing `malwareanalysisbook.com`.
+- Check **DLL2.dll**:
+  - Confirm it creates `temp.txt` and writes to it.
+- Confirm in OllyDbg:
+  - Set a breakpoint at `WriteFile`, verify the filename (`temp.txt`).
+- Document: The file written to.
+
+**Expected Outcome:**
+- Filename: `temp.txt`.
+
+---
+
+### 6. When Lab09-03.exe creates a job using NetScheduleJobAdd, where does it get the data for the second parameter?
+
+**Steps:**
+- In IDA, locate the `NetScheduleJobAdd` call in **Lab09-03.exe**.
+- Check the parameters:
+  - Note three parameters: `Servername`, `Buffer`, `JobID`.
+- Trace the `Buffer` parameter (second):
+  - Find the buffer setup (e.g., containing `ping www.malwareanalysisbook.com`).
+- Confirm in OllyDbg:
+  - Set a breakpoint at `NetScheduleJobAdd`, verify the buffer contents.
+- Document: The source of the buffer data.
+
+**Expected Outcome:**
+- Buffer contains `ping www.malwareanalysisbook.com`.
+
+---
+
+### 7. While running or debugging the program, you will see that it prints out three pieces of mystery data. What are the following: DLL 1 mystery data 1, DLL 2 mystery data 2, and DLL 3 mystery data 3?
+
+**Steps:**
+- Run **Lab09-03.exe** in OllyDbg with breakpoints at output functions.
+- Note the outputs:
+  - **DLL1 mystery data 1**: Process ID (from question 4).
+  - **DLL2 mystery data 2**: Handle ID for `temp.txt` (from question 5).
+  - **DLL3 mystery data 3**: Memory location of `ping www.malwareanalysisbook.com` (from question 6).
+- Confirm in IDA for each DLL’s output logic.
+- Document: The three data points.
+
+**Expected Outcome:**
+- **DLL1**: Process ID.
+- **DLL2**: Handle ID for `temp.txt`.
+- **DLL3**: Memory location of `ping www.malwareanalysisbook.com`.
+
+---
+
+### 8. How can you load DLL2.dll into IDA Pro so that it matches the load address used by OllyDbg?
+
+**Steps:**
+- In OllyDbg, note the load address for `DLL2.dll` (e.g., `0x00150000`).
+- Open **DLL2.dll** in IDA:
+  - Select `File > Open`, choose `DLL2.dll`.
+  - Check the **Manual Load** box in the load dialog.
+  - Enter `0x00150000` as the load address.
+  - Confirm the base address matches OllyDbg’s.
+- Verify in IDA’s segments view.
+- Document: The manual load process.
+
+**Expected Outcome:**
+- Load `DLL2.dll` at `0x00150000` using manual load in IDA.
+

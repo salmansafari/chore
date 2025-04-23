@@ -1,0 +1,251 @@
+Lab 11-01: Analysis of Lab11-01.exe
+Question 1: What does the malware drop to disk?
+1. Open Lab11-01.exe in PEview on the analysis VM.
+2. Navigate to the IMAGE_IMPORT_DIRECTORY to examine imported functions.
+3. Look for imports related to resource manipulation (e.g., FindResource, LoadResource, LockResource).
+4. Check for file creation imports (e.g., CreateFile, WriteFile).
+5. Navigate to the resource section (IMAGE_RESOURCE_DIRECTORY) in PEview.
+6. Identify any embedded binaries or unusual resources (e.g., a section named TGAD).
+7. Extract the embedded resource using Resource Hacker:
+    * Open Lab11-01.exe in Resource Hacker.
+    * Save the embedded binary to disk (e.g., extracted.dll).
+8. Launch Process Monitor (Procmon.exe) on the VM.
+9. Set a filter for Lab11-01.exe and Operation contains CreateFile.
+10. Run Lab11-01.exe and monitor file creation events.
+11. Note the file path and name of any created files (e.g., msgina32.dll).
+12. Compare the hash of the dropped file with the extracted resource using a tool like fciv or Get-FileHash.
+
+Question 2: How does the malware achieve persistence?
+1. Launch Process Monitor on the VM.
+2. Set a filter for Lab11-01.exe and Operation begins with RegSet.
+3. Clear the event log (Ctrl+X) and run Lab11-01.exe.
+4. Review Procmon output for registry write operations.
+5. Note any modifications to HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\GinaDLL.
+6. Open Lab11-01.exe in IDA Pro.
+7. Locate the main function or entry point.
+8. Look for calls to registry manipulation functions (e.g., RegOpenKeyEx, RegSetValueEx).
+9. Identify strings or constants referencing GinaDLL or msgina32.dll.
+10. Verify the registry key using regedit:
+    * Navigate to HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon.
+    * Check the GinaDLL value.
+
+Question 3: How does the malware steal user credentials?
+1. Open msgina32.dll in CFF Explorer VIII on the analysis VM.
+2. Navigate to the Export Directory to view exported functions.
+3. Look for functions with the Wlx prefix (e.g., WlxLoggedOutSAS, WlxActivateUserShell).
+4. Compare these exports to Microsoft documentation for GINA DLL requirements.
+5. Open msgina32.dll in IDA Pro.
+6. Locate the exported Wlx functions.
+7. Analyze the function logic for credential handling (e.g., intercepting username, password, domain).
+8. Look for calls to authentication-related APIs or data logging routines.
+9. Run Lab11-01.exe in a Windows XP VM.
+10. Monitor process activity using Process Explorer to confirm msgina32.dll is loaded by winlogon.exe.
+
+Question 4: What does the malware do with stolen credentials?
+1. Open msgina32.dll in IDA Pro.
+2. Locate the function sub_10001570 (or equivalent, based on IDA’s naming).
+3. Analyze the function for operations involving:
+    * System time retrieval (e.g., GetSystemTime, GetLocalTime).
+    * File operations (e.g., CreateFile, WriteFile).
+    * String formatting (e.g., adding newline characters).
+4. Look for references to the file msutil32.sys.
+5. Launch Process Monitor on the VM.
+6. Set a filter for Operation contains CreateFile or WriteFile and Path contains msutil32.sys.
+7. Run Lab11-01.exe, reboot the VM, and log in/out to trigger credential logging.
+8. Check Procmon for file write events to C:\Windows\System32\msutil32.sys.
+9. Open msutil32.sys in a text editor or hex editor to inspect the logged data format.
+
+Question 5: How can you use this malware to get user credentials from your test environment?
+1. Set up a Windows XP VM (as GINA DLLs are ignored in Vista and later).
+2. Copy Lab11-01.exe to the VM.
+3. Run Lab11-01.exe to install msgina32.dll and set the GinaDLL registry key.
+4. Verify the registry key HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\GinaDLL points to msgina32.dll.
+5. Reboot the VM to load the custom GINA DLL into winlogon.exe.
+6. Log in to the VM with test credentials (e.g., username: testuser, password: password123).
+7. Log out of the VM to trigger credential interception.
+8. Navigate to C:\Windows\System32 and locate msutil32.sys.
+9. Open msutil32.sys in a text editor to extract logged credentials.
+10. Use Process Monitor to confirm file write operations to msutil32.sys during login/logout.
+
+
+Lab 11-02: Analysis of Lab11-02.dll
+Question 1: What are the exports for this DLL malware?
+1. Open Lab11-02.dll in PEview or CFF Explorer VIII on the analysis VM.
+2. Navigate to the Export Directory to list exported functions.
+3. Note the export names (e.g., installer, DllEntryPoint).
+4. Open Lab11-02.dll in IDA Pro.
+5. Go to the Exports tab to confirm the list of exported functions.
+6. Cross-reference with the main function or DllMain to identify the role of each export.
+
+Question 2: What happens after you attempt to install this malware using rundll32.exe?
+1. Launch Process Monitor on the VM.
+2. Set a filter for Process Name is rundll32.exe and operations like CreateFile, RegSetValue, ReadFile.
+3. Clear the event log (Ctrl+X).
+4. Run the command in an elevated command prompt on a Windows XP VM:rundll32.exe Lab11-02.dll,installer
+5. 
+6. Monitor Procmon for:
+    * File creation events (e.g., spoolvxx32.dll in C:\Windows\System32).
+    * Registry modifications (e.g., HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Windows\AppInit_DLLs).
+    * File read attempts for Lab11-02.ini.
+7. Verify the created file spoolvxx32.dll in C:\Windows\System32.
+8. Compare the hash of spoolvxx32.dll with Lab11-02.dll using fciv.
+9. Check the registry using regedit for the AppInit_DLLs key.
+
+Question 3: Where must Lab11-02.ini reside in order for the malware to install properly?
+1. Open Lab11-02.dll in IDA Pro.
+2. Locate the installer export function.
+3. Look for calls to GetSystemDirectoryA and string concatenation with Lab11-02.ini.
+4. Identify the file path constructed (e.g., C:\Windows\System32\Lab11-02.ini).
+5. Launch Process Monitor on the VM.
+6. Set a filter for Operation contains CreateFile and Path contains Lab11-02.ini.
+7. Run rundll32.exe Lab11-02.dll,installer.
+8. Note any failed file open attempts for Lab11-02.ini.
+9. Copy Lab11-02.ini to C:\Windows\System32.
+10. Re-run the command and confirm successful file access in Procmon.
+
+Question 4: How is this malware installed for persistence?
+1. Open Lab11-02.dll in IDA Pro.
+2. Navigate to the installer export function.
+3. Look for calls to RegOpenKeyEx and RegSetValueEx.
+4. Identify the registry key modified (e.g., HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Windows\AppInit_DLLs).
+5. Note the value set (e.g., spoolvxx32.dll).
+6. Launch Process Monitor on the VM.
+7. Set a filter for rundll32.exe and Operation begins with RegSet.
+8. Run rundll32.exe Lab11-02.dll,installer.
+9. Verify the AppInit_DLLs registry modification in Procmon.
+10. Use regedit to confirm the AppInit_DLLs value points to spoolvxx32.dll.
+11. Run a test process (e.g., notepad.exe) and use Process Explorer to check if spoolvxx32.dll is loaded.
+
+Question 5: What user-space rootkit technique does this malware employ?
+1. Open Lab11-02.dll in IDA Pro.
+2. Press Ctrl+F12 to view the call flow graph of the DLL.
+3. Locate the DllMain function and analyze its initialization logic.
+4. Look for calls to functions that modify process memory (e.g., VirtualProtect, WriteProcessMemory).
+5. Identify references to networking APIs (e.g., wsock32.dll, send).
+6. Check for inline hooking by searching for modifications to function prologues.
+7. Use the Imports tab to confirm dynamic loading of wsock32.dll via LoadLibrary and GetProcAddress.
+8. Analyze subroutines for hooking logic (e.g., replacing function pointers or injecting jump instructions).
+9. Run rundll32.exe Lab11-02.dll,installer in a Windows XP VM.
+10. Use Process Explorer to monitor processes loading spoolvxx32.dll and check for unusual API behavior.
+
+Question 6: What does the hooking code do?
+1. Open Lab11-02.dll in IDA Pro.
+2. Locate the function sub_10001203 (or equivalent, based on IDA’s naming).
+3. Analyze the function for:
+    * Memory modification operations (e.g., VirtualProtect, WriteProcessMemory).
+    * Instruction overwriting (e.g., injecting a JMP to a malicious handler).
+    * References to wsock32.dll or the send function.
+4. Look for logic that checks for specific strings (e.g., RCPT TO:).
+5. Identify buffer manipulation to alter network data (e.g., replacing email recipients).
+6. Set a breakpoint on sub_10001203 in OllyDbg:
+    * Load Lab11-02.dll using loaddll.exe.
+    * Set a breakpoint at the function’s entry point.
+    * Step through to observe memory writes and API hooks.
+7. Run a test email client (e.g., Outlook Express) and monitor network traffic with Wireshark to confirm hook behavior.
+
+Question 7: Which process(es) does this malware attack and why?
+1. Open Lab11-02.dll in IDA Pro.
+2. Search for strings MSIMN.exe, THEBAT.exe, and OUTLOOK.exe.
+3. Locate the function that checks process names (e.g., sub_100014B6).
+4. Analyze the logic for process enumeration (e.g., CreateToolhelp32Snapshot, Process32Next).
+5. Confirm the malware targets these processes by checking conditional branches.
+6. Run rundll32.exe Lab11-02.dll,installer in a Windows XP VM.
+7. Launch Process Explorer and start msimn.exe (Outlook Express).
+8. Check if spoolvxx32.dll is loaded into msimn.exe.
+9. Use Wireshark to monitor SMTP traffic from msimn.exe for anomalies.
+10. Repeat for OUTLOOK.exe and THEBAT.exe if available.
+
+Question 8: What is the significance of the .ini file?
+1. Open Lab11-02.dll in IDA Pro.
+2. Locate the sub_100010B3 function (or equivalent decoding routine).
+3. Analyze the function for decoding operations (e.g., XOR loops, byte manipulation).
+4. Identify references to Lab11-02.ini and file read operations (CreateFile, ReadFile).
+5. Load Lab11-02.dll in OllyDbg using loaddll.exe.
+6. Place a breakpoint at the entry of sub_100010B3.
+7. Ensure Lab11-02.ini is in C:\Windows\System32.
+8. Run the DLL and step through the decoding routine.
+9. Inspect the memory dump for the decoded output (e.g., an email address like billy@malwareanalysisbook.com).
+10. Use Wireshark to capture SMTP traffic and confirm the decoded email is used in RCPT TO: commands.
+
+
+Lab 11-03: Analysis of Lab11-03.exe and Lab11-03.dll
+Question 1: What interesting analysis leads can you discover using basic static analysis?
+1. Run strings on Lab11-03.exe in the analysis VM.
+2. Look for strings related to DLL loading (e.g., inet_epar32.dll).
+3. Identify references to services (e.g., net start cisvc).
+4. Note any file paths or non-existent DLLs (e.g., inet_epar32.dll).
+5. Run strings on Lab11-03.dll.
+6. Look for strings indicating keylogging (e.g., <SHIFT>, file paths like C:\WINDOWS\System32\kernel64x.dll).
+7. Open Lab11-03.exe in PEview or Dependency Walker.
+8. Check imports for file operations (CopyFileA, CreateFileA, WriteFile).
+9. Note service manipulation imports (e.g., StartService, OpenSCManager).
+10. Open Lab11-03.dll in PEview.
+11. Check imports for keylogging APIs (GetAsyncKeyState, GetForegroundWindow, GetWindowTextA).
+12. Verify the export zzz69806582 in the Export Directory.
+
+Question 2: What happens when you run this malware?
+1. Launch Process Monitor on the VM.
+2. Set a filter for Process Name is Lab11-03.exe or cisvc.exe.
+3. Include operations like CreateFile, WriteFile, ReadFile, Process Create.
+4. Clear the event log (Ctrl+X).
+5. Ensure Lab11-03.exe and Lab11-03.dll are in the same directory.
+6. Run Lab11-03.exe in a Windows XP VM.
+7. Monitor Procmon for:
+    * File creation events (e.g., C:\WINDOWS\System32\inet_epar32.dll).
+    * Access to C:\WINDOWS\System32\cisvc.exe.
+    * Service start commands (e.g., net start cisvc).
+8. Verify the created file inet_epar32.dll and compare its hash with Lab11-03.dll.
+9. Use Process Explorer to confirm cisvc.exe is running.
+10. Check for file creation of C:\WINDOWS\System32\kernel64x.dll.
+
+Question 3: How does Lab11-03.exe persistently install Lab11-03.dll?
+1. Open Lab11-03.exe in IDA Pro.
+2. Locate the main function.
+3. Look for calls to CopyFileA to copy Lab11-03.dll to inet_epar32.dll.
+4. Identify calls to a custom function (e.g., sub_401070) that processes cisvc.exe.
+5. Analyze sub_401070 for:
+    * File mapping operations (CreateFileMapping, MapViewOfFile).
+    * Memory modifications to alter cisvc.exe.
+6. Look for shellcode injection logic (e.g., writing LoadLibraryA and GetProcAddress calls).
+7. Check for service start commands (e.g., system("net start cisvc")).
+8. Launch Process Monitor on the VM.
+9. Set a filter for Lab11-03.exe and Operation contains WriteFile or Process Create.
+10. Run Lab11-03.exe and verify modifications to cisvc.exe and service startup.
+
+Question 4: Which Windows system file does the malware infect?
+1. Open Lab11-03.exe in IDA Pro.
+2. Locate the main function and find references to C:\WINDOWS\System32\cisvc.exe.
+3. Analyze the function that processes cisvc.exe (e.g., sub_401070).
+4. Look for file mapping and write operations targeting cisvc.exe.
+5. Launch Process Monitor on the VM.
+6. Set a filter for Path contains cisvc.exe and Operation contains CreateFile.
+7. Run Lab11-03.exe and note access to C:\WINDOWS\System32\cisvc.exe.
+8. Use Process Explorer to confirm cisvc.exe loads inet_epar32.dll.
+9. Compare the modified cisvc.exe with a clean version using a hex editor.
+
+Question 5: What does Lab11-03.dll do?
+1. Open Lab11-03.dll in IDA Pro.
+2. Navigate to the exported function zzz69806582.
+3. Analyze the function for thread creation (CreateThread).
+4. Locate the thread’s StartAddress subroutine.
+5. Check for:
+    * Mutex creation (CreateMutexA) to ensure single instance (e.g., MZ).
+    * File creation (CreateFile) for C:\WINDOWS\System32\kernel64x.dll.
+    * Keylogging APIs (GetAsyncKeyState, GetForegroundWindow, GetWindowTextA).
+    * File write operations (WriteFile) to log data.
+6. Run Lab11-03.exe in a Windows XP VM.
+7. Use Process Monitor to filter for cisvc.exe and Operation contains WriteFile.
+8. Type text in an application (e.g., Notepad) to trigger keylogging.
+9. Verify keylog data in C:\WINDOWS\System32\kernel64x.dll using a text editor.
+
+Question 6: Where does the malware store the data it collects?
+1. Open Lab11-03.dll in IDA Pro.
+2. Locate the zzz69806582 export and its thread subroutine.
+3. Identify file creation/write operations referencing C:\WINDOWS\System32\kernel64x.dll.
+4. Look for data formatting (e.g., %s: %s\n) to log keystrokes and window titles.
+5. Launch Process Monitor on the VM.
+6. Set a filter for Path contains kernel64x.dll and Operation contains WriteFile.
+7. Run Lab11-03.exe and type text in an application.
+8. Monitor Procmon for write events to C:\WINDOWS\System32\kernel64x.dll.
+9. Open C:\WINDOWS\System32\kernel64x.dll in a text editor.
+10. Inspect the file for logged keystrokes, window titles, and process paths.

@@ -1,0 +1,634 @@
+Detailed Steps for Malware Analysis
+A) Analysis of Lab01-01.exe and Lab01-01.dll
+1. Upload the files to http://www.VirusTotal.com/ and view the reports. Does either file match any existing antivirus signatures?
+Steps:
+
+Open a web browser and navigate to http://www.VirusTotal.com.
+Click on the "Choose File" button under the file upload section.
+For Lab01-01.exe:
+Select Lab01-01.exe from your analysis environment (ensure it’s isolated, e.g., a VM).
+Upload the file and wait for the scan to complete.
+View the report under the "Analysis" tab. Note the detection rate (e.g., X/70 scanners).
+
+
+Repeat the process for Lab01-01.dll.
+Record the detection rates for both files. A high detection rate (e.g., 30–50/70) indicates known malicious signatures.
+
+Expected Outcome:
+
+Lab01-01.exe Detection Rate: Likely matches known signatures due to its age (2010).
+Lab01-01.dll Detection Rate: Likely matches signatures, possibly slightly lower than the EXE.
+
+2. When were these files compiled?
+Steps:
+
+Open PEview on your analysis machine.
+Load Lab01-01.exe:
+Navigate to File > Open and select Lab01-01.exe.
+In the PEview interface, locate IMAGE_NT_HEADERS.
+Expand to IMAGE_FILE_HEADER.
+Find the Time Date Stamp field. Convert the timestamp (hexadecimal) to a readable format using a tool like DCode or an online converter.
+Record the compile time: 2010-12-19 16:16:19 UTC.
+
+
+Repeat for Lab01-01.dll:
+Load the DLL in PEview.
+Navigate to the same Time Date Stamp field.
+Record the compile time: 2010-12-19 16:16:38 UTC.
+
+
+
+Expected Outcome:
+
+Confirmed compile times as provided.
+
+3. Are there any indications that either of these files is packed or obfuscated? If so, what are these indicators?
+Steps:
+
+Open PEiD on your analysis machine.
+For Lab01-01.exe:
+Load the file in PEiD (File > Open).
+Check the "Signature" field. It should indicate compilation with Microsoft Visual C++ 6.0.
+Look for packing indicators (e.g., high entropy, small import table, or known packer signatures like UPX). None should be present.
+
+
+Repeat for Lab01-01.dll:
+Load the DLL in PEiD.
+Confirm it’s also compiled with Microsoft Visual C++ 6.0 with no packing signatures.
+
+
+Optionally, use Exeinfo PE to cross-check for packers or obfuscation.
+
+Expected Outcome:
+
+No packing or obfuscation indicators for either file.
+
+4. Do any imports hint at what this malware does? If so, which imports are they?
+Steps:
+
+Open Dependency Walker on your analysis machine.
+For Lab01-01.exe:
+Load the file (File > Open).
+In the "Module" window, locate imports from KERNEL32.DLL.
+Note the following functions:
+CopyFile: Indicates file copying behavior.
+FindFirstFile, FindNextFile: Suggests file searching or enumeration.
+
+
+
+
+For Lab01-01.dll:
+Load the DLL in Dependency Walker.
+Check KERNEL32.DLL imports and note:
+CreateProcess: Suggests launching new processes.
+Sleep: Indicates potential delays or timing-based behavior.
+
+
+
+
+Save the import details for reference.
+
+Expected Outcome:
+
+Imports suggest file manipulation (EXE) and process creation/delay tactics (DLL).
+
+5. Are there any other files or host-based indicators that you could look for on infected systems?
+Steps:
+
+Open a hex editor (e.g., HxD) or strings tool (e.g., BinText or strings command in a Linux environment).
+Load Lab01-01.exe:
+Extract printable strings (e.g., run strings Lab01-01.exe > strings.txt).
+Search for file paths or suspicious references.
+Identify the string C:\windows\system32\kerne132.dll (note the typo in "kernel32").
+
+
+Check for the presence of kerne132.dll on an infected system:
+In a VM, navigate to C:\Windows\System32 and look for kerne132.dll.
+Verify its hash or analyze it separately if found.
+
+
+Document this as a host-based indicator.
+
+Expected Outcome:
+
+Reference to C:\windows\system32\kerne132.dll as a key indicator.
+
+6. What network-based indicators could be used to find this malware on infected machines?
+** swings:**
+
+Set up a network monitoring tool (e.g., Wireshark) in a sandbox environment.
+Run Lab01-01.dll in a controlled VM:
+Ensure the VM can access the internet (or use a fake DNS server like Fakenet-NG).
+Capture network traffic in Wireshark.
+Filter for connections to the IP address 127.26.152.13.
+
+
+Analyze traffic for protocols (e.g., TCP/UDP), ports, or payloads.
+Document the IP as a network-based indicator for detecting infected systems.
+
+Expected Outcome:
+
+Connections to 127.26.152.13 indicate infection.
+
+7. What would you guess is the purpose of these files?
+Steps:
+
+Combine findings from imports, strings, and network activity:
+Lab01-01.exe imports suggest it searches for files (FindFirstFile, FindNextFile) and copies them (CopyFile).
+The string C:\windows\system32\kerne132.dll indicates it may deploy this DLL.
+Lab01-01.dll imports (CreateProcess, Sleep) and network activity (IP 127.26.152.13) suggest backdoor or RAT functionality.
+
+
+Hypothesize that the EXE checks for or deploys the DLL, which establishes persistence and communicates with a remote server.
+
+Expected Outcome:
+
+The EXE deploys the DLL as kerne132.dll for persistence; the DLL acts as a backdoor/RAT.
+
+
+B) Analysis of Lab01-02.exe
+1. Upload the Lab01-02.exe file to http://www.VirusTotal.com/. Does it match any existing antivirus definitions?
+Steps:
+
+Navigate to http://www.VirusTotal.com in a browser.
+Upload Lab01-02.exe:
+Click "Choose File," select the EXE, and submit.
+Wait for the scan to complete.
+
+
+Check the "Analysis" tab for the detection rate (e.g., X/70 scanners).
+Note if it matches known malicious signatures.
+
+Expected Outcome:
+
+Likely a moderate to high detection rate (e.g., 20–40/70 scanners).
+
+2. Are there any indications that this file is packed or obfuscated? If so, what are these indicators? If the file is packed, unpack it if possible.
+Steps:
+
+Open Exeinfo PE on your analysis machine.
+Load Lab01-02.exe:
+Check the packer detection section. It should indicate UPX packing.
+
+
+Confirm packing with PEiD:
+Load the file and verify the UPX signature.
+
+
+Unpack the file:
+Open a terminal in the directory containing Lab01-02.exe.
+Run the command: upx -d Lab01-02.exe.
+Verify unpacking by reloading the file in Exeinfo PE (should show no packer).
+
+
+Save the unpacked file for further analysis.
+
+Expected Outcome:
+
+File is packed with UPX; unpacking is possible.
+
+3. Do any imports hint at this program’s functionality? If so, which imports are they and what do they tell you?
+Steps:
+
+Open Dependency Walker.
+Load the unpacked Lab01-02.exe (if unpacking was successful; otherwise, analyze the packed version).
+Check imports from WININET.DLL:
+Note functions:
+InternetOpenUrl: Suggests accessing URLs.
+InternetOpen: Indicates internet connection initialization.
+
+
+
+
+Interpret these as potential indicators of downloading content or communicating with a remote server.
+
+Expected Outcome:
+
+Imports suggest internet-based functionality, likely downloading malicious payloads.
+
+4. What host- or network-based indicators could be used to identify this malware on infected machines?
+Steps:
+
+Extract strings from Lab01-02.exe:
+Use a strings tool (e.g., strings Lab01-02.exe > strings.txt).
+Search for suspicious strings.
+Identify malservice and http://www.malwareanalysisbook.com.
+
+
+Host-based indicators:
+Check for services named malservice on an infected system (e.g., via services.msc or sc query).
+
+
+Network-based indicators:
+Set up Wireshark or Fakenet-NG in a VM.
+Run the EXE and monitor for traffic to http://www.malwareanalysisbook.com.
+Note the URL and any associated IPs or protocols.
+
+
+
+Expected Outcome:
+
+Host: malservice. Network: Traffic to http://www.malwareanalysisbook.com.
+
+
+C) Analysis of Lab01-03.exe
+1. Upload the Lab01-03.exe file to http://www.VirusTotal.com/. Does it match any existing antivirus definitions?
+Steps:
+
+Go to http://www.VirusTotal.com.
+Upload Lab01-03.exe:
+Select the file and submit.
+Wait for the scan results.
+
+
+Record the detection rate from the "Analysis" tab.
+
+Expected Outcome:
+
+Likely matches signatures (e.g., 25–45/70 scanners).
+
+2. Are there any indications that this file is packed or obfuscated? If so, what are these indicators? If the file is packed, unpack it if possible.
+Steps:
+
+Open PE Detective on your analysis machine.
+Load Lab01-03.exe:
+Check for packer signatures. It should indicate FSG packing.
+
+
+Confirm with Exeinfo PE or PEiD for consistency.
+Attempt to unpack:
+Use an FSG unpacker tool (e.g., QuickUnpack or manual unpacking in a debugger like OllyDbg).
+If successful, save the unpacked file.
+
+
+If unpacking fails, note that analysis may be limited.
+
+Expected Outcome:
+
+File is packed with FSG; unpacking may require advanced tools.
+
+3. Do any imports hint at this program’s functionality? If so, which imports are they and what do they tell you?
+Steps:
+
+If unpacked, open the unpacked Lab01-03.exe in Dependency Walker:
+Check for imports and note any suspicious functions.
+
+
+If still packed, note that imports are obscured and require unpacking for analysis.
+Attempt to infer functionality from packer behavior (e.g., FSG often hides malicious imports).
+
+Expected Outcome:
+
+Imports unavailable due to packing.
+
+4. What host- or network-based indicators could be used to identify this malware on infected machines?
+Steps:
+
+If unpacked, extract strings using strings or BinText:
+Look for file paths, URLs, or service names.
+
+
+If packed, attempt dynamic analysis:
+Run the EXE in a VM with Wireshark and Fakenet-NG.
+Monitor for file creation or network traffic.
+
+
+Note that indicators are limited until unpacked.
+
+Expected Outcome:
+
+Indicators unavailable due to packing.
+
+
+D) Analysis of Lab01-04.exe
+1. Upload the Lab01-04.exe file to http://www.VirusTotal.com/. Does it match any existing antivirus definitions?
+Steps:
+
+Visit http://www.VirusTotal.com.
+Upload Lab01-04.exe and wait for the scan.
+Record the detection rate.
+
+Expected Outcome:
+
+Likely a moderate detection rate (e.g., 20–40/70 scanners).
+
+2. Are there any indications that this file is packed or obfuscated? If so, what are these indicators? If the file is packed, unpack it if possible.
+Steps:
+
+Open PEiD and load Lab01-04.exe:
+Check for packer signatures. It should indicate Microsoft Visual C++ 6.0, not packed.
+
+
+Confirm with Exeinfo PE for no packing or obfuscation.
+No unpacking is needed.
+
+Expected Outcome:
+
+No packing or obfuscation.
+
+3. When was this program compiled?
+Steps:
+
+Open PEview and load Lab01-04.exe.
+Navigate to IMAGE_NT_HEADERS > IMAGE_FILE_HEADER > Time Date Stamp.
+Convert the timestamp to a readable format.
+Record the compile time.
+
+Expected Outcome:
+
+Compile time to be determined.
+
+4. Do any imports hint at this program’s functionality? If so, which imports are they and what do they tell you?
+Steps:
+
+Open Dependency Walker and load Lab01-04.exe.
+Check for imports from common DLLs (e.g., KERNEL32.DLL, USER32.DLL).
+Note any functions suggesting specific behavior (e.g., file operations, network activity).
+Document findings.
+
+Expected Outcome:
+
+Imports to be determined.
+
+5. What host- or network-based indicators could be used to identify this malware on infected machines?
+Steps:
+
+Extract strings using strings Lab01-04.exe > strings.txt.
+Search for file paths, registry keys, or URLs.
+Run the EXE in a VM with Wireshark:
+Monitor for file creation or network traffic.
+
+
+Document indicators like created files or contacted IPs.
+
+Expected Outcome:
+
+Indicators to be determined.
+
+6. This file has one resource in the resource section. Use Resource Hacker to examine that resource, and then use it to extract the resource. What can you learn from the resource?
+Steps:
+
+Open Resource Hacker and load Lab01-04.exe.
+Navigate to the resource section:
+Look for the single resource (e.g., under RCData or Binary).
+
+
+Examine the resource:
+If it’s an executable, note its type (e.g., PE file).
+Save the resource (Action > Save Resource as Binary File).
+
+
+Analyze the extracted resource:
+Load it in PEiD or a hex editor to confirm if it’s an embedded executable.
+If executable, run it in a sandbox for further analysis.
+
+
+
+Expected Outcome:
+
+Likely an embedded malicious executable.
+
+
+E) Analysis of Lab03-01.exe using basic dynamic analysis tools
+1. What are this malware’s imports and strings?
+Steps:
+
+Open Dependency Walker and load Lab03-01.exe:
+Note a low number of imports, suggesting packing.
+
+
+Extract strings:
+Run strings Lab03-01.exe > strings.txt.
+Review for suspicious strings (e.g., file paths, URLs).
+
+
+If packed, attempt to unpack or proceed with dynamic analysis.
+
+Expected Outcome:
+
+Low imports indicate packing; strings to be determined.
+
+2. What are the malware’s host-based indicators?
+Steps:
+
+Set up a Windows XP VM (isolated).
+Run Lab03-01.exe:
+Use Process Monitor (Procmon) to capture file, registry, and process activity.
+Filter for the EXE’s process name.
+
+
+Check for:
+Mutex: Look for WinVMX32 in Procmon or Process Explorer.
+File creation: Verify vmx32to64.exe in C:\Windows\System32.
+Registry changes: Check HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run\VideoDriver.
+
+
+Document these as host-based indicators.
+
+Expected Outcome:
+
+Mutex: WinVMX32, File: vmx32to64.exe, Registry: VideoDriver.
+
+3. Are there any useful network-based signatures for this malware? If so, what are they?
+Steps:
+
+In the VM, run Fakenet-NG or ApateDNS alongside Wireshark.
+Execute Lab03-01.exe and monitor network traffic.
+Look for DNS queries, HTTP requests, or connections to specific IPs.
+Document any captured signatures.
+
+Expected Outcome:
+
+Network signatures to be determined via Fakenet-NG/ApateDNS.
+
+
+F) Analysis of Lab03-02.dll using basic dynamic analysis tools
+1. How can you get this malware to install itself?
+Steps:
+
+Open PE-bear and load Lab03-02.dll.
+Navigate to the "Exports" tab to identify exported functions.
+Note any functions related to installation (e.g., DllInstall).
+In a VM, register the DLL:
+Run regsvr32 Lab03-02.dll in a command prompt.
+
+
+Monitor with Procmon to confirm installation activity.
+
+Expected Outcome:
+
+Installation via exported functions or regsvr32.
+
+2. How would you get this malware to run after installation?
+Steps:
+
+Open Process Explorer in the VM.
+Search for processes loading Lab03-02.dll:
+Right-click processes and select "Properties" to view loaded DLLs.
+
+
+If not loaded, trigger execution:
+Identify the service or process tied to the DLL (see step 3).
+Restart the associated service or run the host process.
+
+
+
+Expected Outcome:
+
+DLL runs via a service or process.
+
+3. How can you find the process under which this malware is running?
+Steps:
+
+In Procmon, filter for operations involving Lab03-02.dll (e.g., file access or module load).
+Identify the process name (e.g., svchost.exe).
+Cross-check in Process Explorer:
+Look for svchost instances and verify loaded DLLs.
+
+
+Note the service name (e.g., via services.msc) tied to the process.
+
+Expected Outcome:
+
+Likely runs under svchost with a specific service.
+
+4. Which filters could you set in order to use procmon to glean information?
+Steps:
+
+Open Procmon in the VM.
+Set filters:
+Process Name is svchost.exe (or the identified process).
+Path contains Lab03-02.dll to capture DLL-related activity.
+
+
+Run the DLL (e.g., via regsvr32 or service restart).
+Analyze file, registry, and network operations.
+
+Expected Outcome:
+
+Filter by svchost Process ID for relevant activity.
+
+5. Are there any useful network-based signatures for this malware?
+Steps:
+
+Run Fakenet-NG in the VM.
+Execute the DLL (via service or regsvr32).
+Monitor for outbound requests:
+Note URLs, IPs, or protocols in Fakenet logs.
+
+
+Cross-check with Wireshark for confirmation.
+Document network signatures.
+
+Expected Outcome:
+
+Signatures from remote server requests.
+
+
+G) Execute the malware found in the file Lab03-03.exe while monitoring it using basic dynamic analysis tools in a safe environment
+1. What do you notice when monitoring this malware with Process Explorer?
+Steps:
+
+Open Process Explorer in a Windows VM.
+Run Lab03-03.exe.
+Observe the process tree:
+Note the EXE spawning svchost.exe.
+Watch for both processes terminating quickly.
+
+
+Document the behavior.
+
+Expected Outcome:
+
+Brief svchost spawn followed by termination.
+
+2. Can you identify any live memory modifications?
+Steps:
+
+Run Lab03-03.exe in the VM.
+In Process Explorer, locate the svchost process (before it terminates).
+Dump memory:
+Use Process Hacker or a debugger to extract svchost memory.
+
+
+Extract strings from memory using strings.
+Compare with on-disk strings (from strings Lab03-03.exe).
+Note significant differences indicating code injection or unpacking.
+
+Expected Outcome:
+
+Memory strings differ from disk, suggesting modifications.
+
+3. What are the malware’s host-based indicators? What is the purpose of this program?
+Steps:
+
+Run Lab03-03.exe with Procmon:
+Filter for file creation events.
+Identify practicalmalwareanalysis.log in the filesystem.
+
+
+Check memory and disk for the log file’s presence.
+Hypothesize purpose:
+Log file suggests tracking or logging malicious activity.
+
+
+Document indicators and purpose.
+
+Expected Outcome:
+
+Indicator: practicalmalwareanalysis.log. Purpose: Logging malicious activity.
+
+
+H) Analysis of Lab03-04.exe using basic dynamic analysis tools
+1. What happens when you run this file?
+Steps:
+
+Set up a Windows VM with Procmon and Process Explorer.
+Run Lab03-04.exe.
+In Procmon, filter for the EXE’s process:
+Look for a CreateProcess event spawning cmd.exe with a del command.
+
+
+Verify the file is deleted from the filesystem.
+
+Expected Outcome:
+
+File deletes itself via del command.
+
+2. What is causing the roadblock in dynamic analysis?
+Steps:
+
+Review Procmon logs for conditions:
+Check if the EXE checks for specific command-line arguments.
+Look for network requests (e.g., fetching a remote file).
+
+
+Test hypotheses:
+Run with dummy arguments (e.g., Lab03-04.exe test).
+Monitor with Fakenet-NG for missing remote dependencies.
+
+
+Document potential causes (e.g., missing parameters or files).
+
+Expected Outcome:
+
+Roadblock due to missing command-line parameters or remote file.
+
+3. Are there other ways to run this program?
+Steps:
+
+Extract strings from Lab03-04.exe:
+Identify potential command-line arguments.
+
+
+Test execution with each string as an argument (e.g., Lab03-04.exe <string>).
+If unsuccessful, attempt static analysis:
+Load in IDA Free or Ghidra to analyze logic for execution conditions.
+
+
+Note that deletion persists, limiting dynamic analysis.
+
+Expected Outcome:
+
+No successful alternative execution; deletion persists.
+

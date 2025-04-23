@@ -1,0 +1,728 @@
+Below is a detailed, formatted step-by-step guide for analyzing the malware files specified in the prompt, covering **Lab16-01.exe**, **Lab16-02.exe**, **Lab16-03.exe**, **Lab17-01.exe**, **Lab17-02.dll**, and **Lab17-03.exe**. The steps expand on the provided information to be clear and actionable, using tools like IDA Pro, OllyDbg, PE-bear, pestudio, Procmon, and dynamic analysis within a VMware environment. Instances of "P.T.V.A’s Mulund College Of Commerce (2024-2025)", "M.Sc. IT Sem II Malware Analysis", and page numbers have been removed as requested.
+
+---
+
+# Detailed Steps for Malware Analysis
+
+## A) Analysis of Lab16-01.exe (Using a Debugger)
+
+**Note**: This malware is identical to **Lab09-01.exe** but includes added anti-debugging techniques.
+
+### 1. Which anti-debugging techniques does this malware employ?
+
+**Steps:**
+- Open **Lab16-01.exe** in **IDA Free** or **IDA Pro** to examine the code structure:
+  - Use the **Graph View** (`Space`) to identify complex jumps and conditional flows indicating anti-debugging.
+- Analyze common anti-debugging techniques:
+  - Search for APIs like `IsDebuggerPresent`, `CheckRemoteDebuggerPresent`, or PEB checks (e.g., `BeingDebugged` flag).
+  - Look for timing checks (e.g., `GetTickCount`, `QueryPerformanceCounter`).
+  - Check for exception-based techniques (e.g., raising exceptions to detect debugger interception).
+- Load in **OllyDbg** (v1.10 or v2.01):
+  - Step through the entry point (`F8`) and note any immediate crashes or terminations.
+  - Set breakpoints on suspected anti-debugging APIs.
+- Document techniques:
+  - Likely PEB checks (e.g., `BeingDebugged` at `FS:[30h]`), timing checks, or exception handling.
+
+**Expected Outcome:**
+- Techniques: PEB checks, timing checks, exception-based detection.
+
+---
+
+### 2. What happens when each anti-debugging technique succeeds?
+
+**Steps:**
+- In OllyDbg, trigger each technique:
+  - For PEB checks, run without hiding the debugger; note if the program terminates or alters execution (e.g., jumps to an exit routine).
+  - For timing checks, step through timing APIs; observe if the program detects delays and exits.
+  - For exception-based checks, allow exceptions to pass to the debugger; note crashes or termination.
+- In IDA, trace the code paths:
+  - Follow conditional jumps after each check (e.g., `jz` or `jnz` based on debugger detection).
+  - Identify outcomes (e.g., `ExitProcess`, crash, or fake execution path).
+- Document outcomes for each technique.
+
+**Expected Outcome:**
+- PEB check: Terminates or jumps to a decoy path.
+- Timing check: Exits or crashes.
+- Exception check: Crashes or terminates.
+
+---
+
+### 3. How can you get around these anti-debugging techniques?
+
+**Steps:**
+- **OllyDbg Plugin (ScyllaHide)**:
+  - Download and install **ScyllaHide** for OllyDbg v2.01:
+    - Copy the plugin to the OllyDbg plugins directory.
+    - Enable ScyllaHide in OllyDbg (`Options > Plugins > ScyllaHide`).
+    - Configure to hide PEB flags, timing APIs, and exception handling.
+  - Run the malware with ScyllaHide enabled; verify it bypasses checks.
+- **Manual Patching**:
+  - In OllyDbg, locate anti-debugging checks (e.g., PEB access at `FS:[30h]`).
+  - Patch instructions (e.g., `NOP` out `IsDebuggerPresent` or set `BeingDebugged` to 0).
+- **Debugger Settings**:
+  - In OllyDbg, adjust exception handling (`Options > Debugging > Exceptions`) to pass exceptions to the program.
+- Test bypasses:
+  - Run with ScyllaHide or patches; ensure the malware executes normally.
+- Document methods.
+
+**Expected Outcome:**
+- Bypasses: ScyllaHide plugin, manual patching, adjusted debugger settings.
+
+---
+
+### 4. How do you manually change the structures checked during runtime?
+
+**Steps:**
+- Use **OllyDbg v1.10** with the command-line plugin:
+  - Load **Lab16-01.exe**.
+  - Identify PEB checks (e.g., `mov eax, fs:[30h]; movzx eax, byte ptr [eax+2]` for `BeingDebugged`).
+- Modify the PEB at runtime:
+  - Pause execution at the PEB check.
+  - Use the command-line plugin (`Plugins > Command Line`).
+  - Set `BeingDebugged` to 0: `mov byte ptr fs:[30h+2], 0`.
+- Alternatively, patch the check:
+  - Replace the check with `mov eax, 0` to simulate no debugger.
+- Test the modification:
+  - Continue execution (`F9`); verify the malware proceeds.
+- Document the process.
+
+**Expected Outcome:**
+- Modify PEB `BeingDebugged` flag using OllyDbg’s command-line plugin or patching.
+
+---
+
+### 5. Which OllyDbg plug-in will protect you from the anti-debugging techniques used by this malware?
+
+**Steps:**
+- Review anti-debugging techniques (PEB, timing, exceptions).
+- Identify suitable plugins:
+  - **ScyllaHide**: Hides PEB flags, spoofs timing APIs, and handles exceptions.
+  - **HideDebug**: Similar functionality for Immunity Debugger.
+- Test ScyllaHide:
+  - Install in OllyDbg v2.01 and enable all anti-anti-debugging options.
+  - Run **Lab16-01.exe**; confirm it bypasses all checks.
+- Document the plugin.
+
+**Expected Outcome:**
+- Plugin: **ScyllaHide**.
+
+---
+
+## B) Analysis of Lab16-02.exe (Using a Debugger)
+
+**Goal**: Determine the correct 4-character command-line password.
+
+### 1. What happens when you run Lab16-02.exe from the command line?
+
+**Steps:**
+- Run **Lab16-02.exe** in a Windows VM:
+  - Open a command prompt, execute `Lab16-02.exe`.
+- Observe the output:
+  - Note the prompt requesting a 4-character password.
+- Document the behavior.
+
+**Expected Outcome:**
+- Prompts for a 4-character password.
+
+---
+
+### 2. What happens when you run Lab16-02.exe and guess the command-line parameter?
+
+**Steps:**
+- Run with a guessed password:
+  - Execute `Lab16-02.exe abcd`.
+- Observe the output:
+  - Note if it accepts the password, rejects it (e.g., “Incorrect password”), or terminates.
+- Try multiple guesses (e.g., `1234`, `wxyz`).
+- Document the behavior.
+
+**Expected Outcome:**
+- Rejects incorrect passwords and terminates.
+
+---
+
+### 3. What is the command-line password?
+
+**Steps:**
+- Load **Lab16-02.exe** in **OllyDbg**:
+  - Set a breakpoint on `strncmp` (see question 4 for location).
+- Run with a dummy argument (e.g., `Lab16-02.exe test`).
+- Step through `strncmp`:
+  - Note the expected string (4 characters) in memory (e.g., `EAX` or `EDX`).
+- Test the password:
+  - Run `Lab16-02.exe <password>` in the command line.
+  - Verify it outputs “Correct password” or similar.
+- Document the password.
+
+**Expected Outcome:**
+- Password: To be determined (4 characters).
+
+---
+
+### 4. Load Lab16-02.exe into IDA Pro. Where in the main function is strncmp?
+
+**Steps:**
+- Open **Lab16-02.exe** in **IDA Pro**:
+  - Locate the `main` function (typically `0x401000` or labeled `main`).
+- Search for `strncmp`:
+  - Use the **Imports** window (`View > Open Subviews > Imports`) to find `strncmp`.
+  - Press `X` to view cross-references to `strncmp`.
+  - Identify the call within `main` (e.g., `call strncmp` at `0x401XXX`).
+- Alternatively, search for string comparisons:
+  - Look for `push` instructions with string pointers before the call.
+- Document the address.
+
+**Expected Outcome:**
+- `strncmp` location: `0x401XXX` (specific address in `main`).
+
+---
+
+### 5. What happens when you load this malware into OllyDbg using the default settings?
+
+**Steps:**
+- Open **Lab16-02.exe** in **OllyDbg** (v1.10 or v2.01).
+- Run with default settings (`F9`):
+  - Note it terminates immediately without hitting breakpoints.
+- Use **PE-bear** to analyze the PE structure:
+  - Check for unusual sections or entries (e.g., TLS callbacks).
+- Document the behavior.
+
+**Expected Outcome:**
+- Terminates immediately due to a TLS callback.
+
+---
+
+### 6. What is unique about the PE structure of Lab16-02.exe?
+
+**Steps:**
+- Open **Lab16-02.exe** in **PE-bear**:
+  - Navigate to the **Sections** tab.
+  - Note the presence of a `.tls` (Thread Local Storage) section.
+- Analyze the TLS directory:
+  - Check the **Data Directory** for TLS entries.
+  - Confirm a TLS callback exists, running before `main`.
+- Document the unique feature.
+
+**Expected Outcome:**
+- Unique: `.tls` section with a callback.
+
+---
+
+### 7. Where is the callback located? (Hint: Use CTRL-E in IDA Pro.)
+
+**Steps:**
+- Open **Lab16-02.exe** in **IDA Pro**:
+  - Press `Ctrl+E` to open the **Entry Points** window.
+  - Locate the TLS callback (e.g., `sub_401XXX` or labeled `TlsCallback`).
+- Alternatively, check the TLS directory:
+  - Go to `View > Open Subviews > Segments`, find the `.tls` section.
+  - Trace the callback address.
+- Document the address.
+
+**Expected Outcome:**
+- Callback location: `0x401XXX`.
+
+---
+
+### 8. Which anti-debugging technique is the program using to terminate immediately in the debugger and how can you avoid this check?
+
+**Steps:**
+- In IDA, analyze the TLS callback:
+  - Look for anti-debugging checks (e.g., `IsDebuggerPresent`, PEB `BeingDebugged`).
+  - Note a check causing termination (e.g., `ExitProcess` if debugger detected).
+- Avoid the check:
+  - In OllyDbg, set a breakpoint at the TLS callback entry.
+  - Patch the check (e.g., `NOP` out `IsDebuggerPresent` or set `BeingDebugged` to 0).
+  - Alternatively, use **ScyllaHide** to hide the debugger.
+- Test the bypass:
+  - Run with the patch or ScyllaHide; ensure the program continues.
+- Document the technique and bypass.
+
+**Expected Outcome:**
+- Technique: Debugger detection in TLS callback (e.g., `IsDebuggerPresent`).
+- Bypass: Patch or ScyllaHide.
+
+---
+
+### 9. What is the command-line password you see in the debugger after you disable the anti-debugging technique?
+
+**Steps:**
+- In OllyDbg, disable the TLS callback check (see question 8).
+- Set a breakpoint on `strncmp` (from question 4).
+- Run with a dummy argument (`Lab16-02.exe test`).
+- Step through `strncmp`:
+  - Note the expected 4-character password in memory.
+- Document the password.
+
+**Expected Outcome:**
+- Password: To be determined (4 characters).
+
+---
+
+### 10. Does the password found in the debugger work on the command line?
+
+**Steps:**
+- Test the password from question 9:
+  - Run `Lab16-02.exe <password>` in a command prompt.
+- Observe the output:
+  - Confirm it outputs “Correct password” or similar.
+- Document the result.
+
+**Expected Outcome:**
+- Password works on the command line.
+
+---
+
+## C) Analysis of Lab16-03.exe (Using a Debugger)
+
+**Note**: This malware is similar to **Lab09-02.exe** with added anti-debugging techniques.
+
+### 1. Which strings do you see when using static analysis on the binary?
+
+**Steps:**
+- Open **Lab16-03.exe** in **pestudio**:
+  - Navigate to the **Strings** tab.
+  - Note relevant strings:
+    - `cmd.exe` (suggests command execution, possibly deletion).
+    - Window-related strings (e.g., `GetForegroundWindow`).
+    - `GetTickCount` (indicates timing-based anti-debugging).
+- Confirm in IDA:
+  - Open the **Strings** window (`Shift+F12`) and verify.
+- Document the strings.
+
+**Expected Outcome:**
+- Strings: `cmd.exe`, window-related, `GetTickCount`.
+
+---
+
+### 2. What happens when you run this binary?
+
+**Steps:**
+- Run **Lab16-03.exe** in a Windows VM:
+  - Execute from a command prompt.
+- Observe the behavior:
+  - Note it terminates immediately with no visible actions.
+- Confirm with **Procmon**:
+  - Filter for the process; check for file, registry, or network activity.
+- Document the behavior.
+
+**Expected Outcome:**
+- Terminates immediately.
+
+---
+
+### 3. How must you rename the sample in order for it to run properly?
+
+**Steps:**
+- In OllyDbg, load **Lab16-03.exe**:
+  - Set a breakpoint at the entry point.
+  - Step through to find a filename check (e.g., `GetModuleFileName` followed by `strcmp`).
+- Note the expected filename (e.g., `ocl.exe` from Lab09-02).
+- Rename the file:
+  - Copy `Lab16-03.exe` to `ocl.exe` and run it.
+- Confirm it executes without terminating.
+- Document the required name.
+
+**Expected Outcome:**
+- Rename to `ocl.exe`.
+
+---
+
+### 4. Which anti-debugging techniques does this malware employ?
+
+**Steps:**
+- In OllyDbg, step through the code:
+  - Set breakpoints on `QueryPerformanceCounter`, `GetTickCount`, and `rdtsc` (via search for `0x0F31`).
+- Analyze each:
+  - **QueryPerformanceCounter**: Measures timing to detect debugger delays.
+  - **GetTickCount**: Checks elapsed time for anomalies.
+  - **rdtsc**: Uses CPU timestamp counter for precise timing.
+- Confirm in IDA:
+  - Locate the subroutines calling these APIs or instructions.
+- Document the techniques.
+
+**Expected Outcome:**
+- Techniques: `QueryPerformanceCounter`, `GetTickCount`, `rdtsc`.
+
+---
+
+### 5. For each technique, what does the malware do if it determines it is running in a debugger?
+
+**Steps:**
+- In OllyDbg, trigger each technique:
+  - **QueryPerformanceCounter**:
+    - Note it sets a variable to `2`, causing a filename check failure.
+  - **GetTickCount**:
+    - Observe an access violation crash if timing is off.
+  - **rdtsc**:
+    - Note it attempts to delete itself (e.g., via `cmd.exe`).
+- In IDA, trace the code paths:
+  - Follow conditional jumps after each check.
+- Document the outcomes.
+
+**Expected Outcome:**
+- **QueryPerformanceCounter**: Sets variable to `2`, fails filename check.
+- **GetTickCount**: Causes access violation crash.
+- **rdtsc**: Deletes itself.
+
+---
+
+### 6. Why are the anti-debugging techniques successful in this malware?
+
+**Steps:**
+- Analyze the techniques:
+  - **Timing checks**: Detect debugger delays due to instruction stepping.
+  - **Exception handling**: Debugger interception of exceptions (e.g., divide-by-zero) increases latency.
+- Test without a debugger:
+  - Run `ocl.exe` normally; note no crashes or deletions.
+- Hypothesize:
+  - Multiple checks increase reliability.
+  - Exception-based checks exploit debugger behavior.
+- Document the reasons.
+
+**Expected Outcome:**
+- Success due to multiple timing checks and exception-based detection.
+
+---
+
+### 7. What domain name does this malware use?
+
+**Steps:**
+- In OllyDbg, bypass anti-debugging:
+  - Patch `QueryPerformanceCounter`, `GetTickCount`, and `rdtsc` (e.g., `NOP` or set return values to normal).
+- Set a breakpoint on `gethostbyname`:
+  - Step through to find the domain in `EAX` (e.g., `www.practicalmalwareanalysis.com`).
+- Confirm in IDA:
+  - Locate the decoding routine from Lab09-02 (e.g., `sub_401089`).
+- Document the domain.
+
+**Expected Outcome:**
+- Domain: `www.practicalmalwareanalysis.com`.
+
+---
+
+## D) Analysis of Lab17-01.exe (Inside VMware)
+
+**Note**: This malware is identical to **Lab07-01.exe** with added anti-VMware techniques.
+
+### 1. What anti-VM techniques does this malware employ?
+
+**Steps:**
+- Open **Lab17-01.exe** in **IDA Pro**:
+  - Search for VM detection techniques:
+    - `in` instruction with `VMXh` (VMware port check).
+    - Registry checks (e.g., `HKLM\SYSTEM\CurrentControlSet\Services\VMware`).
+    - Process checks (e.g., `vmware.exe`).
+    - MAC address checks (e.g., VMware-specific prefixes like `00:0C:29`).
+- In OllyDbg, step through:
+  - Set breakpoints on `in` (`0xED`) or string comparisons.
+- Document techniques.
+
+**Expected Outcome:**
+- Techniques: `in` with `VMXh`, registry, process, MAC checks.
+
+---
+
+### 2. If you have the commercial version of IDA Pro, run the IDA Python script from Listing 17-4 in Chapter 17 (provided here as findAntiVM.py). What does it find?
+
+**Steps:**
+- Note: **IDA Free** lacks Python support; assume commercial IDA Pro.
+- Load **Lab17-01.exe** in IDA Pro:
+  - Run `findAntiVM.py` (`File > Script File`).
+- Analyze the script:
+  - Likely searches for `in` instructions, VMware strings, or registry/process checks.
+- Review output:
+  - Expect detection of `VMXh`, registry keys, or process names.
+- Document findings.
+
+**Expected Outcome:**
+- Finds: `in` with `VMXh`, VMware registry/process checks.
+
+---
+
+### 3. What happens when each anti-VM technique succeeds?
+
+**Steps:**
+- In OllyDbg, trigger each technique:
+  - **in with VMXh**: Terminates if VMware port is detected.
+  - **Registry check**: Exits if VMware keys are found.
+  - **Process check**: Terminates if `vmware.exe` is running.
+  - **MAC check**: Exits if VMware MAC prefix is detected.
+- In IDA, trace the code paths:
+  - Follow jumps after each check (e.g., `jz` to `ExitProcess`).
+- Document outcomes.
+
+**Expected Outcome:**
+- **in with VMXh**: Terminates.
+- **Registry**: Exits.
+- **Process**: Terminates.
+- **MAC**: Exits.
+
+---
+
+### 4. Which of these anti-VM techniques work against your virtual machine?
+
+**Steps:**
+- Run **Lab17-01.exe** in a VMware VM:
+  - Use Procmon to monitor behavior.
+  - Note if it terminates immediately.
+- Test each technique:
+  - Check for VMware tools/processes (e.g., `vmware.exe`).
+  - Verify registry keys (`HKLM\SYSTEM\CurrentControlSet\Services\VMware`).
+  - Confirm MAC address (e.g., `00:0C:29:XX:XX:XX`).
+- Document effective techniques.
+
+**Expected Outcome:**
+- Effective: All techniques (VMware-specific).
+
+---
+
+### 5. Why does each anti-VM technique work or fail?
+
+**Steps:**
+- Analyze each technique:
+  - **in with VMXh**: Works due to VMware’s virtualized port.
+  - **Registry**: Works if VMware tools/keys are present.
+  - **Process**: Works if `vmware.exe` runs.
+  - **MAC**: Works if VMware’s MAC prefix is used.
+- Test in a non-VMware VM (e.g., VirtualBox):
+  - Note if techniques fail due to missing VMware signatures.
+- Document reasons.
+
+**Expected Outcome:**
+- **Work**: VMware-specific signatures present.
+- **Fail**: Non-VMware environment.
+
+---
+
+### 6. How could you disable these anti-VM techniques and get the malware to run?
+
+**Steps:**
+- In OllyDbg, locate each check:
+  - **in with VMXh**: Find `in eax, dx` at `0x401XXX`; `NOP` it out (`90 90`).
+  - **Registry**: Patch `RegOpenKeyEx` to return failure.
+  - **Process**: Patch `CreateToolhelp32Snapshot` to skip `vmware.exe`.
+  - **MAC**: Patch MAC comparison to always fail.
+- Alternatively, modify jumps:
+  - Change `jz` to `jnz` to skip termination paths.
+- Test the patched binary:
+  - Run in VMware; ensure it executes.
+- Document the process.
+
+**Expected Outcome:**
+- Disable by `NOP`ing checks or modifying jumps.
+
+---
+
+## E) Analysis of Lab17-02.dll (Inside VMware)
+
+### 1. What are the exports for this DLL?
+
+**Steps:**
+- Open **Lab17-02.dll** in **IDA Pro**:
+  - Go to the **Exports** window (`View > Open Subviews > Exports`).
+- List exports:
+  - Note `InstallRT`, `InstallSA`, `InstallSB`.
+- Confirm in **PE-bear**:
+  - Check the **Exports** tab.
+- Document the exports.
+
+**Expected Outcome:**
+- Exports: `InstallRT`, `InstallSA`, `InstallSB`.
+
+---
+
+### 2. What happens after the attempted installation using rundll32.exe?
+
+**Steps:**
+- Run the DLL in a VMware VM:
+  - Execute `rundll32.exe Lab17-02.dll,InstallRT` (repeat for `InstallSA`, `InstallSB`).
+- Monitor with **Procmon**:
+  - Filter for file and registry activity.
+  - Note creation of `xinstall.log` indicating VM detection and installation cancellation.
+- Observe behavior:
+  - The malware terminates without installing.
+- Document the outcome.
+
+**Expected Outcome:**
+- Cancels installation, creates `xinstall.log`.
+
+---
+
+### 3. Which files are created and what do they contain?
+
+**Steps:**
+- Run the DLL with `rundll32.exe InstallRT`:
+  - Use Procmon to capture file creation.
+- Check the filesystem:
+  - Locate `xinstall.log` (e.g., in the current directory).
+- Open `xinstall.log`:
+  - Note the content: Log of VM detection and installation cancellation.
+- Document the file and content.
+
+**Expected Outcome:**
+- File: `xinstall.log`.
+- Content: VM detection log, cancellation message.
+
+---
+
+### 4. What method of anti-VM is in use?
+
+**Steps:**
+- In IDA, analyze `InstallRT` (at `0x1000D847`):
+  - Locate the call to `sub_10006196` (anti-VM check).
+- Examine `sub_10006196`:
+  - Find the `in` instruction (e.g., `in eax, dx` with `VMXh`).
+- Check cross-references:
+  - Confirm `sub_10006196` is used by `InstallSA` and `InstallSB`.
+- Document the method.
+
+**Expected Outcome:**
+- Method: `in` with `VMXh` (VMware port check).
+
+---
+
+### 5. How could you force the malware to install during runtime?
+
+**Steps:**
+- In OllyDbg, load `rundll32.exe Lab17-02.dll,InstallRT`:
+  - Set a breakpoint at `0x1000D86E` (the `jz` after the anti-VM check).
+- Modify the jump:
+  - Change `jz` to `jnz` (e.g., `0F 84` to `0F 85`).
+- Alternatively, patch the `in` instruction:
+  - At `0x100061DB`, replace `in eax, dx` with `NOP` (`90 90`).
+- Run and verify:
+  - Ensure the installation proceeds.
+- Document the process.
+
+**Expected Outcome:**
+- Force install by changing `jz` to `jnz` or `NOP`ing `in`.
+
+---
+
+### 6. How could you permanently disable the anti-VM technique?
+
+**Steps:**
+- In OllyDbg, patch the binary:
+  - Replace `in eax, dx` at `0x100061DB` with `NOP` (`90 90`).
+  - Save the modified DLL (`File > Copy to Executable`).
+- Alternatively, use a hex editor:
+  - Open `Lab17-02.dll`, locate the `in` instruction, and replace with `90 90`.
+- Test the patched DLL:
+  - Run `rundll32.exe Lab17-02.dll,InstallRT`; confirm installation.
+- Document the process.
+
+**Expected Outcome:**
+- Permanently disable by `NOP`ing `in` instruction.
+
+---
+
+### 7. How does each installation export function work?
+
+**Steps:**
+- In IDA, analyze each export:
+  - **InstallRT (`0x1000D847`)**:
+    - Calls `sub_10006196` for VM check.
+    - If passed, calls `sub_1000D3D0` for installation (e.g., file/registry changes).
+  - **InstallSA (`0x1000DEC1`)**:
+    - Similar VM check, followed by alternative installation logic.
+  - **InstallSB (`0x1000E892`)**:
+    - VM check, then another installation variant.
+- Use Graph View:
+  - Visualize the control flow for each export.
+- Run dynamically:
+  - Use `rundll32.exe` with each export and Procmon to monitor changes.
+- Document the functionality.
+
+**Expected Outcome:**
+- **InstallRT**: Installs via `sub_1000D3D0`.
+- **InstallSA/SB**: Variant installations after VM check.
+
+---
+
+## F) Analysis of Lab17-03.exe (Inside VMware)
+
+### 1. What happens when you run this malware in a virtual machine?
+
+**Steps:**
+- Run **Lab17-03.exe** in a VMware VM:
+  - Execute from a command prompt.
+- Observe the behavior:
+  - Note immediate termination due to anti-VM detection.
+- Use Procmon:
+  - Filter for process activity; check for VM-related checks.
+- Document the outcome.
+
+**Expected Outcome:**
+- Terminates due to anti-VM detection.
+
+---
+
+### 2. How could you get this malware to run and drop its keylogger?
+
+**Steps:**
+- In OllyDbg, load **Lab17-03.exe**:
+  - Identify anti-VM checks (e.g., `in`, registry, process, MAC).
+- Patch the checks:
+  - `NOP` out `in` instructions or modify jumps to skip termination.
+  - Patch registry/process checks to return false.
+- Run the patched binary:
+  - Monitor with Procmon for keylogger activity (e.g., file creation, keyboard hooks).
+- Document the process.
+
+**Expected Outcome:**
+- Patch anti-VM checks to allow keylogger deployment.
+
+---
+
+### 3. Which anti-VM techniques does this malware use?
+
+**Steps:**
+- In IDA, search for VM detection:
+  - `in` with `VMXh` (port check).
+  - Registry checks (e.g., `VMware` in `HKLM\SYSTEM\CurrentControlSet`).
+  - Process checks (e.g., `vmware.exe`).
+  - MAC address checks (e.g., `00:0C:29`).
+- Confirm in OllyDbg:
+  - Set breakpoints on suspect instructions.
+- Document techniques.
+
+**Expected Outcome:**
+- Techniques: `in` with `VMXh`, registry, process, MAC checks.
+
+---
+
+### 4. What system changes could you make to permanently avoid the anti-VM techniques used by this malware?
+
+**Steps:**
+- Modify the VMware environment:
+  - **Remove VMware Tools**: Uninstall via Control Panel.
+  - **Remove Registry Keys**: Delete `VMware` entries in `HKLM\SYSTEM\CurrentControlSet\Control\DeviceClasses`.
+  - **Change MAC Address**: Edit VM settings to use a non-VMware MAC (e.g., `00:1A:2B:XX:XX:XX`).
+  - **Kill VMware Processes**: Ensure no `vmware.exe` or related processes run.
+- Test changes:
+  - Run **Lab17-03.exe**; confirm it executes.
+- Document changes.
+
+**Expected Outcome:**
+- Changes: Remove tools, registry keys, change MAC, kill processes.
+
+---
+
+### 5. How could you patch the binary in OllyDbg to force the anti-VM techniques to permanently fail?
+
+**Steps:**
+- Load **Lab17-03.exe** in OllyDbg:
+  - Locate each anti-VM check:
+    - `in` instruction: `NOP` out (`90 90`).
+    - Registry check: Patch `RegOpenKeyEx` to fail.
+    - Process check: Skip `vmware.exe` detection.
+    - MAC check: Force comparison to fail.
+- Save the patched binary:
+  - `File > Copy to Executable > All Modifications`.
+- Test the patched binary:
+  - Run in VMware; confirm keylogger deployment.
+- Document the patches.
+
+**Expected Outcome:**
+- Patches: `NOP` `in`, force registry/process/MAC checks to fail.

@@ -1,0 +1,782 @@
+
+# Detailed Steps for Malware Analysis
+
+## A) Analysis of Lab19-01.bin (Using shellcode_launcher.exe)
+
+### 1. How is the shellcode encoded?
+
+**Steps:**
+- Understand **shellcode_launcher.exe** usage:
+  - Run `shellcode_launcher.exe -h` in a command prompt to view parameters.
+  - Confirm it requires `-i <shellcode_filename>` (e.g., `shellcode_launcher.exe -i Lab19-01.bin`).
+- Analyze the shellcode encoding:
+  - Run `shellcode_launcher.exe -i Lab19-01.bin` in a Windows VM.
+  - Use **scdbg** for static analysis: `scdbg -f Lab19-01.bin -s -vvv`.
+  - Note the decoding routine: Each payload byte is stored in the low 4 bits of two encoded bytes, added together (e.g., `byte = (high_byte & 0x0F) + (low_byte & 0x0F)`).
+- Extract strings:
+  - Use `strings Lab19-01.bin` or `scdbg -f Lab19-01.bin -findsc` to find decoded strings.
+- Document the encoding scheme.
+
+**Expected Outcome:**
+- Encoding: Alphabetic, each payload byte split into low 4 bits of two bytes, added together.
+
+---
+
+### 2. Which functions does the shellcode manually import?
+
+**Steps:**
+- Use **scdbg** to analyze imports:
+  - Run `scdbg -f Lab19-01.bin -findsc`.
+  - Note dynamically resolved functions (e.g., via `GetProcAddress`).
+- Common shellcode imports:
+  - Look for `LoadLibraryA`, `GetProcAddress`, `URLDownloadToFileA`, `CreateProcessA`.
+- Confirm in a debugger:
+  - Run `shellcode_launcher.exe -i Lab19-01.bin` in **OllyDbg**.
+  - Set breakpoints on `GetProcAddress` to capture imported functions.
+- Document the functions.
+
+**Expected Outcome:**
+- Functions: `LoadLibraryA`, `GetProcAddress`, `URLDownloadToFileA`, `CreateProcessA`.
+
+---
+
+### 3. What network host does the shellcode communicate with?
+
+**Steps:**
+- Run **scdbg**:
+  - `scdbg -f Lab19-01.bin -findsc`.
+  - Note the URL: `http://www.practicalmalwareanalysis.com/shellcode/annoy_user.exe`.
+- Confirm dynamically:
+  - Run `shellcode_launcher.exe -i Lab19-01.bin` with **Wireshark** in a VM.
+  - Capture HTTP requests to `www.practicalmalwareanalysis.com`.
+- Extract strings:
+  - Use `strings Lab19-01.bin` to verify the URL.
+- Document the host.
+
+**Expected Outcome:**
+- Host: `http://www.practicalmalwareanalysis.com/shellcode/annoy_user.exe`.
+
+---
+
+### 4. What filesystem residue does the shellcode leave?
+
+**Steps:**
+- Analyze **scdbg** output:
+  - Note the downloaded binary path: `C:\WINDOWS\system32\1.exe`.
+- Confirm dynamically:
+  - Run `shellcode_launcher.exe -i Lab19-01.bin` in a VM with **Procmon**.
+  - Filter for file creation at `%SystemRoot%\system32\1.exe`.
+- Check the filesystem:
+  - Verify the presence of `1.exe` in `C:\Windows\System32`.
+- Document the residue.
+
+**Expected Outcome:**
+- Residue: `%SystemRoot%\system32\1.exe`.
+
+---
+
+### 5. What does the shellcode do?
+
+**Steps:**
+- Combine findings:
+  - Decodes itself using a 4-bit alphabetic scheme.
+  - Imports functions (`URLDownloadToFileA`, `CreateProcessA`).
+  - Downloads `annoy_user.exe` from `www.practicalmalwareanalysis.com` to `C:\Windows\System32\1.exe`.
+  - Executes the downloaded binary.
+- Confirm dynamically:
+  - Run with Procmon and Wireshark; verify download and execution.
+- Document the behavior.
+
+**Expected Outcome:**
+- Decodes, downloads, and executes `annoy_user.exe`.
+
+---
+
+## B) Analysis of Lab19-02.exe
+
+### 1. What process is injected with the shellcode?
+
+**Steps:**
+- Open **Lab19-02.exe** in **IDA Pro**:
+  - Locate the `main` function (e.g., `0x401000`).
+  - Note three operations:
+    - Adjusts privileges with `SeDebugPrivilege` (via `AdjustTokenPrivileges`).
+    - Queries registry for default browser (`HKLM\SOFTWARE\Classes\http\shell\open\command`).
+    - Launches the browser process with `ShowWindow` set to 0 (hidden).
+- Hypothesize:
+  - The default browser (e.g., Internet Explorer) is the target.
+- Confirm dynamically:
+  - Run in a VM with **Procmon**.
+  - Filter for process creation (e.g., `iexplore.exe`).
+- Document the process.
+
+**Expected Outcome:**
+- Process: Default browser (e.g., Internet Explorer).
+
+---
+
+### 2. Where is the shellcode located?
+
+**Steps:**
+- In IDA, search for shellcode:
+  - Look for a data section or embedded bytes (e.g., `.data` or `.rdata`).
+  - Find a memory allocation (`VirtualAlloc`) or write operation (`WriteProcessMemory`).
+- Trace the injection:
+  - Note the shellcode is copied to the target process’s memory.
+- In OllyDbg:
+  - Set a breakpoint on `WriteProcessMemory`.
+  - Note the source buffer address containing the shellcode.
+- Document the location.
+
+**Expected Outcome:**
+- Location: Embedded in `.data` section, copied to target process memory.
+
+---
+
+### 3. How is the shellcode encoded?
+
+**Steps:**
+- In OllyDbg, set the origin to `0x407030`:
+  - Right-click, select **New Origin Here**.
+  - Set a breakpoint at `0x407030`.
+- Step through the code:
+  - Note any decoding routine (e.g., XOR, Base64, or custom).
+- In IDA, analyze `0x407030`:
+  - Look for loops or bitwise operations decoding the shellcode.
+- Document the encoding.
+
+**Expected Outcome:**
+- Encoding: To be determined (e.g., XOR or custom).
+
+---
+
+### 4. Which functions does the shellcode manually import?
+
+**Steps:**
+- In OllyDbg, focus on injection:
+  - Set a breakpoint on `WriteProcessMemory`.
+  - Note the shellcode buffer written to the target process.
+- Analyze the shellcode:
+  - Step into the injected process (e.g., attach to `iexplore.exe`).
+  - Set breakpoints on `GetProcAddress` to capture imports.
+- Common imports:
+  - Expect `LoadLibraryA`, `GetProcAddress`, `connect`, `send`, `recv`.
+- Document the functions.
+
+**Expected Outcome:**
+- Functions: `LoadLibraryA`, `GetProcAddress`, `connect`, `send`, `recv`.
+
+---
+
+### 5. What network hosts does the shellcode communicate with?
+
+**Steps:**
+- In OllyDbg, debug the shellcode:
+  - After injection, set a breakpoint on `connect`.
+  - Note the IP and port in the socket parameters (e.g., `192.168.200.2:13330`).
+- Confirm dynamically:
+  - Run **Lab19-02.exe** in a VM with **Wireshark**.
+  - Capture TCP traffic to `192.168.200.2` on port `13330`.
+- Document the host.
+
+**Expected Outcome:**
+- Host: `192.168.200.2:13330` (TCP).
+
+---
+
+### 6. What does the shellcode do?
+
+**Steps:**
+- Combine findings:
+  - Injected into the default browser.
+  - Connects to `192.168.200.2:13330`.
+  - Establishes a reverse command shell.
+- Confirm dynamically:
+  - Run with Wireshark and Procmon; verify shell commands.
+- Document the behavior.
+
+**Expected Outcome:**
+- Establishes a reverse command shell to `192.168.200.2:13330`.
+
+---
+
+## C) Analysis of Lab19-03.pdf (and Lab19-03_sc.bin if needed)
+
+### 1. What exploit is used in this PDF?
+
+**Steps:**
+- Analyze **Lab19-03.pdf** with **pdf-parser** or **Didier Stevens’ pdfid**:
+  - Run `pdfid.py Lab19-03.pdf` to identify suspicious elements (e.g., `/JavaScript`, `/OpenAction`).
+  - Use `pdf-parser.py -f Lab19-03.pdf` to extract objects.
+- Look for exploits:
+  - Check for known PDF vulnerabilities (e.g., CVE-2010-0188, LibTIFF exploit).
+  - Note JavaScript or heap-spraying code.
+- Hypothesize:
+  - Likely a JavaScript-based exploit or buffer overflow.
+- Document the exploit.
+
+**Expected Outcome:**
+- Exploit: To be determined (e.g., JavaScript-based, CVE-2010-0188).
+
+---
+
+### 2. How is the shellcode encoded?
+
+**Steps:**
+- Extract shellcode from **Lab19-03.pdf**:
+  - Use `pdf-parser.py` to find embedded streams.
+  - Save the shellcode as `Lab19-03_sc.bin`.
+- Analyze with **shellcode_launcher.exe**:
+  - Run `shellcode_launcher.exe -i Lab19-03_sc.bin`.
+- Use **scdbg**:
+  - `scdbg -f Lab19-03_sc.bin -s -vvv`.
+  - Note the decoding routine (e.g., XOR, Base64, or custom).
+- Document the encoding.
+
+**Expected Outcome:**
+- Encoding: To be determined (e.g., XOR or none).
+
+---
+
+### 3. Which functions does the shellcode manually import?
+
+**Steps:**
+- Use **scdbg**:
+  - Run `scdbg -f Lab19-03_sc.bin -findsc`.
+  - Note dynamically resolved functions (e.g., `ShellExecuteA`).
+- In OllyDbg:
+  - Run `shellcode_launcher.exe -i Lab19-03_sc.bin`.
+  - Set breakpoints on `GetProcAddress`.
+- Document the functions.
+
+**Expected Outcome:**
+- Functions: `ShellExecuteA`, others to be determined.
+
+---
+
+### 4. What filesystem residue does the shellcode leave?
+
+**Steps:**
+- Run `shellcode_launcher.exe -i Lab19-03_sc.bin` in a VM:
+  - Monitor with **Procmon**.
+  - Filter for file creation in `%TEMP%`.
+- Note files created:
+  - Expect two files in the user’s temp directory.
+- Check file contents:
+  - Open the files to identify their purpose (e.g., executables or data).
+- Document the residue.
+
+**Expected Outcome:**
+- Residue: Two files in `%TEMP%`.
+
+---
+
+### 5. What does the shellcode do?
+
+**Steps:**
+- Combine findings:
+  - Extracts two files from the PDF.
+  - Writes files to `%TEMP%`.
+  - Executes both using `ShellExecuteA`.
+- Confirm dynamically:
+  - Run with Procmon; verify file execution.
+- Document the behavior.
+
+**Expected Outcome:**
+- Extracts, writes, and executes two files from `%TEMP%`.
+
+---
+
+## D) Analysis of Lab20-01.exe
+
+### 1. Does the function at 0x401040 take any parameters?
+
+**Steps:**
+- Open **Lab20-01.exe** in **IDA Pro**:
+  - Go to `0x401040` (`Ctrl+G`).
+  - Analyze the function prologue:
+    - Check for stack setup (`push ebp; mov ebp, esp`).
+    - Look for parameter access (e.g., `mov eax, [ebp+8]`).
+  - Note no parameters are accessed.
+- Confirm in OllyDbg:
+  - Set a breakpoint at `0x401040`; check the stack.
+- Document the finding.
+
+**Expected Outcome:**
+- No parameters.
+
+---
+
+### 2. Which URL is used in the call to URLDownloadToFile?
+
+**Steps:**
+- In IDA, locate `URLDownloadToFile`:
+  - Find the import in the **Imports** window.
+  - Trace cross-references to the call.
+- Check the URL parameter:
+  - Note the string `http://www.practicalmalwareanalysis.com/cpp.html`.
+- Confirm dynamically:
+  - Run with **Wireshark**; capture the HTTP request.
+- Document the URL.
+
+**Expected Outcome:**
+- URL: `http://www.practicalmalwareanalysis.com/cpp.html`.
+
+---
+
+### 3. What does this program do?
+
+**Steps:**
+- Combine findings:
+  - Calls a function at `0x401040`.
+  - Downloads a file from `http://www.practicalmalwareanalysis.com/cpp.html` to `C:\tempdownload.exe`.
+- Confirm dynamically:
+  - Run with **Procmon**; verify `C:\tempdownload.exe` creation.
+- Document the behavior.
+
+**Expected Outcome:**
+- Downloads `cpp.html` to `C:\tempdownload.exe`.
+
+---
+
+## E) Analysis of Lab20-02.exe
+
+### 1. What can you learn from the interesting strings in this program?
+
+**Steps:**
+- Run `strings Lab20-02.exe`:
+  - Note strings:
+    - C++ evidence (e.g., `.rdata` RTTI).
+    - Network/FTP imports (e.g., `FtpPutFile`).
+    - `.doc`, `.pdf`, `ftp.practicalmalwareanalysis.com`.
+- Hypothesize:
+  - C++-based FTP client exfiltrating `.doc` and `.pdf` files.
+- Document the strings.
+
+**Expected Outcome:**
+- Strings: C++ RTTI, FTP functions, `.doc`, `.pdf`, `ftp.practicalmalwareanalysis.com`.
+
+---
+
+### 2. What do the imports tell you about this program?
+
+**Steps:**
+- Open **Lab20-02.exe** in **pestudio**:
+  - Check the **Imports** tab:
+    - `wininet.dll`: `FtpPutFile`, `InternetConnect` (FTP operations).
+    - `kernel32.dll`: `FindFirstFile`, `FindNextFile` (file enumeration).
+- Hypothesize:
+  - Enumerates and uploads files via FTP.
+- Document the imports.
+
+**Expected Outcome:**
+- Imports: FTP (`FtpPutFile`), file enumeration (`FindFirstFile`).
+
+---
+
+### 3. What is the purpose of the object created at 0x4011D9? Does it have any virtual functions?
+
+**Steps:**
+- In IDA, go to `0x4011D9`:
+  - Note object creation (e.g., `new` or constructor call).
+  - Check for a class with virtual functions (vtable setup).
+- Analyze the vtable:
+  - Look for a pointer to a virtual function table.
+- Confirm in OllyDbg:
+  - Set a breakpoint at `0x4011D9`; inspect the object.
+- Document the purpose and vtable.
+
+**Expected Outcome:**
+- Purpose: File handler object.
+- Virtual functions: Yes (vtable present).
+
+---
+
+### 4. Which functions could possibly be called by the call [edx] instruction at 0x401349?
+
+**Steps:**
+- In IDA, go to `0x401349`:
+  - Note the `call [edx]` (virtual function call).
+- Trace object creation:
+  - Identify three objects: PDF, DOC, other files.
+  - Each has a vtable with specific functions (e.g., directory assignment).
+- Check the vtable:
+  - Find the function pointers for each object type.
+- Document the functions.
+
+**Expected Outcome:**
+- Functions: PDF/DOC directory setters, generic file handler.
+
+---
+
+### 5. How could you easily set up the server that this malware expects in order to fully analyze the malware without connecting it to the Internet?
+
+**Steps:**
+- Set up a local FTP server:
+  - Install **FileZilla Server** or **XAMPP** on the VM.
+  - Configure an FTP user and directory.
+- Redirect the domain:
+  - Edit `C:\Windows\System32\drivers\etc\hosts`.
+  - Add: `127.0.0.1 ftp.practicalmalwareanalysis.com`.
+- Run the malware:
+  - Monitor with **Procmon** and **Wireshark**; verify uploads to the local server.
+- Document the setup.
+
+**Expected Outcome:**
+- Setup: Local FTP server, hosts file redirect.
+
+---
+
+### 6. What is the purpose of this program?
+
+**Steps:**
+- Combine findings:
+  - Enumerates `.pdf` and `.doc` files.
+  - Uploads to `ftp.practicalmalwareanalysis.com`.
+- Confirm dynamically:
+  - Run with a local FTP server; verify file uploads.
+- Document the purpose.
+
+**Expected Outcome:**
+- Purpose: Exfiltrates `.pdf` and `.doc` files via FTP.
+
+---
+
+### 7. What is the purpose of implementing a virtual function call in this program?
+
+**Steps:**
+- Analyze the virtual functions:
+  - Note they handle different file types (PDF, DOC, other).
+- Hypothesize:
+  - Enables polymorphic behavior for file-specific actions (e.g., directory selection).
+- Document the purpose.
+
+**Expected Outcome:**
+- Purpose: Polymorphic file handling based on extension.
+
+---
+
+## F) Analysis of Lab20-03.exe
+
+### 1. What can you learn from the interesting strings in this program?
+
+**Steps:**
+- Run `strings Lab20-03.exe`:
+  - Note strings:
+    - C++ RTTI, `Config error`, network-related (e.g., `connect`).
+    - `Sleep` (indicates periodic C2 check-in).
+- Hypothesize:
+  - C++-based remote access tool (RAT).
+- Document the strings.
+
+**Expected Outcome:**
+- Strings: C++ RTTI, `Config error`, network, `Sleep`.
+
+---
+
+### 2. What do the imports tell you about this program?
+
+**Steps:**
+- Open **Lab20-03.exe** in **pestudio**:
+  - Check imports:
+    - `ws2_32.dll`: `connect`, `send`, `recv` (networking).
+    - `kernel32.dll`: `Sleep` (delays).
+- Hypothesize:
+  - RAT with periodic C2 communication.
+- Document the imports.
+
+**Expected Outcome:**
+- Imports: Networking (`connect`, `send`, `recv`), `Sleep`.
+
+---
+
+### 3. At 0x4036F0, there is a function call that takes the string Config error, followed a few instructions later by a call to CxxThrowException. Does the function take any parameters other than the string? Does the function return anything? What can you tell about this function from the context in which it’s used?
+
+**Steps:**
+- In IDA, go to `0x4036F0`:
+  - Note the function call with `Config error`.
+  - Check the stack for additional parameters (e.g., `push` instructions).
+  - Observe no other parameters.
+- Analyze `CxxThrowException`:
+  - Indicates a C++ exception; the function does not return normally.
+- Check context:
+  - Likely a configuration check; throws an exception on failure.
+- Document the findings.
+
+**Expected Outcome:**
+- Parameters: Only `Config error`.
+- Return: None (throws exception).
+- Context: Configuration error handling.
+
+---
+
+### 4. What do the six entries in the switch table at 0x4025C8 do?
+
+**Steps:**
+- In IDA, go to `0x4025C8`:
+  - Note the switch table referenced at `0x40252A`.
+- Analyze each case:
+  - Trace the jump table to six functions (e.g., command handlers).
+  - Common RAT commands: execute, download, upload, sleep, etc.
+- Document the functions.
+
+**Expected Outcome:**
+- Entries: Six command handlers (e.g., execute, download).
+
+---
+
+### 5. What is the purpose of this program?
+
+**Steps:**
+- Combine findings:
+  - C++ RAT with network imports.
+  - Handles commands via a switch table.
+  - Periodic C2 check-in with `Sleep`.
+- Confirm dynamically:
+  - Run with **Wireshark**; verify C2 communication.
+- Document the purpose.
+
+**Expected Outcome:**
+- Purpose: Remote access tool (RAT).
+
+---
+
+## G) Analysis of Lab21-01.exe
+
+### 1. What happens when you run this program without any parameters?
+
+**Steps:**
+- Run **Lab21-01.exe** in a Windows VM:
+  - Note the error: “Not compatible with this version of Windows” (requires 64-bit OS).
+- Confirm architecture:
+  - Open in **pestudio**; verify 64-bit PE header.
+- Document the behavior.
+
+**Expected Outcome:**
+- Error: Requires 64-bit OS.
+
+---
+
+### 2. Depending on your version of IDA Pro, main may not be recognized automatically. How can you identify the call to the main function?
+
+**Steps:**
+- Open **Lab21-01.exe** in **IDA Pro**:
+  - Note 64-bit binary; `main` may not be labeled.
+- Locate the entry point:
+  - Go to the **Entry Points** window (`Ctrl+E`).
+  - Find `_start` or `WinMain`.
+- Trace to `main`:
+  - Look for a call to a function with standard `main` signature (`argc`, `argv`).
+  - Typically at `0x140001XXX`.
+- Document the method.
+
+**Expected Outcome:**
+- Identify via entry point and call tracing.
+
+---
+
+### 3. What is being stored on the stack in the instructions from 0x0000000140001150 to 0x0000000140001161?
+
+**Steps:**
+- In IDA, go to `0x140001150`:
+  - Analyze instructions:
+    - Likely `push` or `mov` to stack (e.g., local variables, buffers).
+    - Check for string pointers or data setup.
+- In **x64dbg**:
+  - Set a breakpoint at `0x140001150`.
+  - Step through; inspect the stack (`RSP`).
+- Document the data.
+
+**Expected Outcome:**
+- Stack: Local variables or buffers.
+
+---
+
+### 4. How can you get this program to run its payload without changing the filename of the executable?
+
+**Steps:**
+- In **x64dbg**, set a breakpoint at the filename check (`0x140001205`, see question 5).
+- Patch the check:
+  - Modify `strncmp` to return 0 (equal) regardless of input.
+  - Alternatively, patch the jump to skip the check.
+- Run the patched binary:
+  - Verify payload execution (e.g., `CreateProcess`).
+- Document the method.
+
+**Expected Outcome:**
+- Patch `strncmp` or jump at `0x140001205`.
+
+---
+
+### 5. Which two strings are being compared by the call to strncmp at 0x0000000140001205?
+
+**Steps:**
+- In **x64dbg**, set a breakpoint at `0x140001205`:
+  - Run the program (`F9`).
+  - Inspect `RCX` and `RDX`:
+    - `RCX`: Binary name (`Lab21-01.exe`).
+    - `RDX`: Expected name (`jzm.exe`).
+- Confirm in IDA:
+  - Trace `strncmp` parameters.
+- Document the strings.
+
+**Expected Outcome:**
+- Strings: `Lab21-01.exe`, `jzm.exe`.
+
+---
+
+### 6. Does the function at 0x00000001400013C8 take any parameters?
+
+**Steps:**
+- In IDA, go to `0x1400013C8`:
+  - Check the prologue:
+    - No parameter access (e.g., `[rbp+XX]`).
+- In **x64dbg**:
+  - Set a breakpoint at `0x1400013C8`.
+  - Inspect the stack; note no parameters.
+- Document the finding.
+
+**Expected Outcome:**
+- No parameters.
+
+---
+
+### 7. How many arguments are passed to the call to CreateProcess at 0x0000000140001093? How do you know?
+
+**Steps:**
+- In IDA, go to `0x140001093`:
+  - Note `CreateProcessA` requires 10 parameters.
+- Trace the stack:
+  - Count `push` or `mov` instructions before the call.
+  - Check `RCX`, `RDX`, etc., for 64-bit calling convention.
+- In **x64dbg**:
+  - Set a breakpoint at `0x140001093`.
+  - Inspect the stack and registers.
+- Document the count.
+
+**Expected Outcome:**
+- Arguments: 10 (based on `CreateProcessA`).
+
+---
+
+## H) Analysis of Lab21-02.exe (x86 and x64 VMs)
+
+### 1. What is interesting about the malware’s resource sections?
+
+**Steps:**
+- Open **Lab21-02.exe** and **Lab12-01.exe** in **pestudio**:
+  - Compare resource sections:
+    - **Lab21-02.exe**: Additional `.rsrc` section, extra strings/imports.
+    - **Lab12-01.exe**: Standard resources.
+- Note specifics:
+  - `.rsrc` may contain embedded binaries (e.g., `Lab21-02.dll`).
+- Document the differences.
+
+**Expected Outcome:**
+- Interesting: `.rsrc` section with embedded binaries.
+
+---
+
+### 2. Is this malware compiled for x64 or x86?
+
+**Steps:**
+- In **pestudio**, check the PE header:
+  - Note `Machine` field: `0x8664` (x64) or `0x14C` (x86).
+- Use **BinDiff**:
+  - Compare with **Lab12-01.exe**; confirm x86 (based on prompt).
+- Document the architecture.
+
+**Expected Outcome:**
+- Compiled for x86.
+
+---
+
+### 3. How does the malware determine the type of environment in which it is running?
+
+**Steps:**
+- In IDA, locate the `main` function:
+  - Search for `IsWow64Process` (checks for 32-bit process on 64-bit OS).
+- Trace the code:
+  - Note conditional jumps based on `IsWow64Process` result.
+- Document the method.
+
+**Expected Outcome:**
+- Uses `IsWow64Process` to detect x86 vs. x64.
+
+---
+
+### 4. What does the malware do differently in an x64 environment versus an x86 environment?
+
+**Steps:**
+- In IDA, trace post-`IsWow64Process`:
+  - **x86**: Drops and injects `Lab21-02.dll`.
+  - **x64**: Drops and launches `Lab21-02x.exe`.
+- Confirm dynamically:
+  - Run on x86 and x64 VMs with **Procmon**.
+- Document the differences.
+
+**Expected Outcome:**
+- **x86**: Injects `Lab21-02.dll`.
+- **x64**: Launches `Lab21-02x.exe`.
+
+---
+
+### 5. Which files does the malware drop when running on an x86 machine? Where would you find the file or files?
+
+**Steps:**
+- Run **Lab21-02.exe** on an x86 VM:
+  - Use **Procmon** to capture file creation.
+  - Note `Lab21-02.dll` (likely in `C:\Windows\System32`).
+- Confirm in IDA:
+  - Trace file drop code on x86 path.
+- Document the file and location.
+
+**Expected Outcome:**
+- File: `Lab21-02.dll`.
+- Location: `C:\Windows\System32`.
+
+---
+
+### 6. Which files does the malware drop when running on an x64 machine? Where would you find the file or files?
+
+**Steps:**
+- Run **Lab21-02.exe** on an x64 VM:
+  - Use **Procmon**; note `Lab21-02x.exe` in `C:\Windows\SysWOW64`.
+- Confirm in IDA:
+  - Trace x64 path to file drop.
+- Document the file and location.
+
+**Expected Outcome:**
+- File: `Lab21-02x.exe`.
+- Location: `C:\Windows\SysWOW64`.
+
+---
+
+### 7. What type of process does the malware launch when run on an x64 system?
+
+**Steps:**
+- In **x64dbg** (x32dbg), set a breakpoint at `0x401381`:
+  - Note `CreateProcess` for `Lab21-02x.exe`.
+- Analyze the binary:
+  - Check `Lab21-02x.exe` for 64-bit PE header.
+- Document the process type.
+
+**Expected Outcome:**
+- Process: 64-bit executable (`Lab21-02x.exe`).
+
+---
+
+### 8. What does the malware do?
+
+**Steps:**
+- Combine findings:
+  - **x86**: Drops `Lab21-02.dll`, injects into `explorer.exe`.
+  - **x64**: Drops and runs `Lab21-02x.exe`.
+- Hypothesize:
+  - Likely a dropper with environment-specific payloads.
+- Confirm dynamically:
+  - Run on both VMs; verify injection and execution.
+- Document the behavior.
+
+**Expected Outcome:**
+- Drops and executes environment-specific payloads.

@@ -1,0 +1,115 @@
+Lab 12-01: Analysis of Lab12-01.exe and Lab12-01.dll
+Question 1: What happens when you run the malware executable?
+1. Open Lab12-01.exe in PEview to check imports (e.g., CreateRemoteThread, WriteProcessMemory).
+2. Launch Process Monitor, filter for Lab12-01.exe and CreateFile, Process Create.
+3. Ensure Lab12-01.exe and Lab12-01.dll are in the same directory.
+4. Run Lab12-01.exe in a Windows XP VM.
+5. Monitor Procmon for file access, process injection, or pop-up activity.
+6. Use Process Explorer to check new processes/threads.
+
+Question 2: What process is being injected?
+1. Run strings on Lab12-01.exe, search for explorer.exe.
+2. Open Lab12-01.exe in IDA Pro, find main function.
+3. Look for process enumeration (CreateToolhelp32Snapshot) targeting explorer.exe.
+4. Launch Process Monitor, filter for CreateRemoteThread and Lab12-01.exe.
+5. Run Lab12-01.exe, confirm explorer.exe injection in Process Explorer.
+
+Question 3: How can you make the malware stop the pop-ups?
+1. Run Lab12-01.exe, observe pop-ups.
+2. Open Process Explorer, locate explorer.exe, check for Lab12-01.dll.
+3. Run in Command Prompt: taskkill /IM explorer.exe /F
+4. Verify pop-ups stop.
+5. Restart explorer.exe:explorer.exe
+
+Question 4: How does this malware operate?
+1. Open Lab12-01.dll in IDA Pro, locate sub_10001030.
+2. Analyze for UI APIs (MessageBoxA) or pop-up loops.
+3. Open Lab12-01.exe in IDA Pro, find injection logic (CreateRemoteThread).
+4. Confirm explorer.exe as target.
+5. Run Lab12-01.exe, verify DLL injection in Process Explorer.
+6. Set breakpoint on sub_10001030 in OllyDbg, step through pop-up code.
+
+Lab 12-02: Analysis of Lab12-02.exe
+Question 1: What is the purpose of this program?
+1. Open Lab12-02.exe in PEview, check imports (CreateProcessA, CreateRemoteThread).
+2. Run strings, look for LOCALIZATION or file paths.
+3. Launch Process Monitor, filter for Lab12-02.exe and CreateProcess, WriteFile.
+4. Run Lab12-02.exe, monitor process creation.
+5. Open Lab12-02.exe in IDA Pro, analyze main for injection logic.
+
+Question 2: How does the launcher program hide execution?
+1. Open Lab12-02.exe in IDA Pro, find main.
+2. Look for CreateProcessA with CREATE_SUSPENDED.
+3. Check LOCALIZATION resource extraction (FindResource).
+4. Analyze memory writes (WriteProcessMemory), thread resumption.
+5. Run strings, confirm LOCALIZATION as UNICODE.
+6. Launch Process Monitor, filter for CreateProcess, run Lab12-02.exe.
+
+Question 3: How is the malicious payload protected?
+1. Open Lab12-02.exe in Resource Hacker, locate LOCALIZATION.
+2. Save resource to extracted.bin, check for encryption in hex editor.
+3. In IDA Pro, find resource loading in main.
+4. Look for decryption (e.g., XOR loops).
+5. Run Lab12-02.exe in OllyDbg, breakpoint on LoadResource.
+6. Dump decrypted payload from memory.
+
+Question 4: How are strings protected?
+1. Run strings on Lab12-02.exe, note lack of cleartext.
+2. In IDA Pro, search main for string decoding (e.g., XOR, byte arrays).
+3. Identify encrypted strings in .data section.
+4. Set breakpoint on decoding routine in OllyDbg, run Lab12-02.exe.
+5. Inspect decoded strings in memory (e.g., file paths).
+6. Document encryption method (e.g., XOR key).
+
+Lab 12-03: Analysis of Lab12-03.exe
+Question 1: What is the purpose of this malicious payload?
+1. Open Lab12-03.exe in PEview, check keylogging imports (SetWindowsHookEx).
+2. Run strings, find practicalmalwareanalysis.log.
+3. Launch Process Monitor, filter for Lab12-03.exe and WriteFile.
+4. Run Lab12-03.exe, type in Notepad.
+5. Check practicalmalwareanalysis.log for keystrokes.
+6. In IDA Pro, confirm keylogging in main.
+
+Question 2: How does the malicious payload inject itself?
+1. Open Lab12-03.exe in IDA Pro, find main.
+2. Look for SetWindowsHookEx call, note hook type (WH_KEYBOARD).
+3. Analyze hook procedure for keylogging.
+4. Launch Process Monitor, filter for SetWindowsHookEx.
+5. Run Lab12-03.exe, confirm hook in Process Explorer.
+
+Question 3: What filesystem residue does this program create?
+1. Launch Process Monitor, filter for Lab12-03.exe and CreateFile, WriteFile.
+2. Run Lab12-03.exe, type in an application.
+3. Note practicalmalwareanalysis.log in Procmon.
+4. Check file location (e.g., current directory).
+5. Open practicalmalwareanalysis.log to verify keystrokes.
+
+Lab 12-04: Analysis of Lab12-04.exe
+Question 1: What does the code at 0x401000 accomplish?
+1. Open Lab12-04.exe in IDA Pro, go to 0x401000.
+2. Analyze for privilege escalation (AdjustTokenPrivileges), process injection.
+3. Check strings for winlogon.exe, sfc_os.dll.
+4. Set breakpoint at 0x401000 in OllyDbg, step through.
+5. Use Process Monitor to capture process/file operations.
+
+Question 2: What DLL is loaded using LoadLibraryA?
+1. In IDA Pro, locate sub_401174.
+2. Find LoadLibraryA call, note argument (sfc_os.dll).
+3. Confirm with strings for sfc_os.dll.
+4. Launch Process Monitor, filter for Load Image and sfc_os.dll.
+5. Run Lab12-04.exe, verify DLL load in Process Explorer.
+
+Question 3: What is the fourth argument passed to the CreateRemoteThread call?
+1. In IDA Pro, find CreateRemoteThread in sub_401174.
+2. Trace fourth argument to GetProcAddress for ordinal 2 (sfc_os.dll).
+3. Open sfc_os.dll in PEview, confirm ordinal 2 is SfcTerminateWatcherThread.
+4. Set breakpoint on CreateRemoteThread in OllyDbg, verify argument.
+5. Monitor thread creation in Procmon targeting winlogon.exe.
+
+Question 4: What malware is dropped by the main executable?
+1. Open Lab12-04.exe in Resource Hacker, check for embedded binaries.
+2. Save resource to dropped.bin, verify PE format in PEview.
+3. Launch Process Monitor, filter for Lab12-04.exe and CreateFile.
+4. Run Lab12-04.exe, note dropped file (e.g., malware.dll).
+5. Compare hashes of dropped file and resource.
+6. Analyze dropped file in IDA Pro for functionality.
